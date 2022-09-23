@@ -22,11 +22,20 @@ object Log {
         LoggerFactory.getLogger(caller().className).log(level, e, message)
 
     internal fun caller(): StackTraceElement =
-        Thread.currentThread().stackTrace.first { element: StackTraceElement ->
-            element.className.let { className: String ->
-                !className.contains('$') && packages.none { (className.startsWith(it)) }
+        Thread.currentThread().stackTrace.let { stack: Array<StackTraceElement> ->
+            stack.firstOrNull { element: StackTraceElement ->
+                element.className.let { className: String ->
+                    !className.contains('$') && packages.none { (className.startsWith(it)) }
+                }
+            } ?: stack.firstOrNull { element: StackTraceElement ->
+                element.className.let { className: String ->
+                    packages.none { (className.startsWith(it)) }
+                }
+            } ?: stack.first { element: StackTraceElement ->
+                element != stack[0]
             }
         }
+
 
     private val packages: Array<String> = arrayOf(
         "java.",

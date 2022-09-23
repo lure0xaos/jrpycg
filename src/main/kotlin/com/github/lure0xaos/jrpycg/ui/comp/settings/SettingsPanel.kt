@@ -100,7 +100,7 @@ class SettingsPanel(
         cmbLocaleUi.selectedItem = localeHolder.locale
     }
 
-    fun update() {
+    private fun update() {
         update(settings)
         cmbLocaleUi.selectedItem = localeHolder.locale
         warningRestart = false
@@ -159,7 +159,7 @@ class SettingsPanel(
         }
 
 
-    fun warnRestart() {
+    private fun warnRestart() {
         if (warningRestart) {
             if (confirm(
                     resources[LC_NEED_RESTART],
@@ -174,6 +174,15 @@ class SettingsPanel(
             ) restarter()
         }
         warningRestart = false
+    }
+
+    fun onShow() {
+        update()
+    }
+
+    fun onHide() {
+        persist()
+        warnRestart()
     }
 
     companion object {

@@ -14,12 +14,14 @@ import com.github.lure0xaos.jrpycg.ui.comp.builder.BuilderPanel
 import com.github.lure0xaos.jrpycg.ui.comp.creator.CreatorPanel
 import com.github.lure0xaos.jrpycg.ui.comp.settings.SettingsPanel
 import com.github.lure0xaos.jrpycg.ui.comp.storage.StoragePanel
+import com.github.lure0xaos.jrpycg.ui.comp.system.SystemPanel
 import com.github.lure0xaos.util.Fit
 import com.github.lure0xaos.util.USER_HOME
 import com.github.lure0xaos.util.findResource
 import com.github.lure0xaos.util.get
 import com.github.lure0xaos.util.getResource
 import com.github.lure0xaos.util.getResourceBundle
+import com.github.lure0xaos.util.putClipboard
 import com.github.lure0xaos.util.resolveName
 import com.github.lure0xaos.util.toImage
 import com.github.lure0xaos.util.ui.JButton
@@ -37,8 +39,6 @@ import com.github.lure0xaos.util.ui.preloader.Preloader
 import com.github.lure0xaos.util.ui.swing
 import java.awt.BorderLayout
 import java.awt.GridLayout
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.nio.file.Path
@@ -104,31 +104,22 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
     }
 
     private fun onTab() {
-        when {
-            isActiveBuilder() -> {
-                settingsPanel.persist()
+        if (isActiveSettings()) {
+            settingsPanel.onShow()
+        } else {
+            settingsPanel.onHide()
+            if (isActiveBuilder()) {
                 runCatching {
                     if (creator.isChanged) builder.setUiRoot(ScriptConverter.fromScript(creator.script))
                     creator.isChanged = false
                 }
-                settingsPanel.warnRestart()
             }
-
-            isActiveCreator() -> {
-                settingsPanel.persist()
-                creator.script = ScriptConverter.toScript(builder.getModel())
-                creator.isChanged = false
-                creator.onShow()
-                settingsPanel.warnRestart()
-            }
-
-            isActiveSettings() -> {
-                settingsPanel.update()
-            }
-
-            isActiveAbout() -> {
-                settingsPanel.persist()
-                settingsPanel.warnRestart()
+            if (isActiveCreator()) {
+                runCatching {
+                    creator.script = ScriptConverter.toScript(builder.getModel())
+                    creator.isChanged = false
+                    creator.onShow()
+                }
             }
         }
     }
@@ -194,6 +185,9 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
                         settingsPanel = it
                     })
                 addTab(resources[LC_TAB_ABOUT], ResIcon.ABOUT.icon, AboutPanel(localeHolder).also { about = it })
+                if (parameters.contains("system")) {
+                    addTab(resources[LC_TAB_SYSTEM], null, SystemPanel(localeHolder))
+                }
                 addChangeListener {
                     onTab()
                 }
@@ -274,11 +268,9 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
                         JMenuItem(resources[LC_BOTTOM_GENERATE_CLIPBOARD]) {
                             settingsPanel.persist()
                             if (!isActiveCreator() || creator.checkErrors().isSuccess) {
-                                Toolkit.getDefaultToolkit().systemClipboard.setContents(
-                                    StringSelection(
-                                        CodeGenerator.generate(builder.getModel(), settingsPanel.settings)
-                                            .joinToString("\n")
-                                    ), null
+                                putClipboard(
+                                    CodeGenerator.generate(builder.getModel(), settingsPanel.settings)
+                                        .joinToString("\n")
                                 )
                                 this@RPyCGFrame.alert(resources[LC_SUCCESS_GENERATE_CLIPBOARD])
                             } else {
@@ -337,6 +329,7 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
         private const val LC_TAB_CREATOR = "tab.creator"
         private const val LC_TAB_SETTINGS = "tab.settings"
         private const val LC_TAB_ABOUT = "tab.about"
+        private const val LC_TAB_SYSTEM = "tab.system"
         private const val LC_TOP_NEW_MENU = "top.new_menu"
         private const val LC_TOP_NEW_VARIABLE = "top.new_item"
         private const val LC_BOTTOM_DD_LOAD = "bottom.dd.load"
@@ -351,6 +344,7 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
         private const val LC_BOTTOM_GENERATE_FILE = "bottom.generate_file"
         private const val LC_TITLE_GENERATE_FILE = "title.generate_file"
         private const val LC_CONFIRM_LOSE = "confirm.lose"
+        private const val LC_CONFIRM_CLOSE = "confirm.close"
         private const val LC_ERROR_LOAD = "error.load"
         private const val LC_ERROR_SAVE = "error.save"
         private const val LC_ERROR_SCRIPT = "error.script"

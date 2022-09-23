@@ -19,6 +19,7 @@ import java.util.Date
 import java.util.Enumeration
 import java.util.EventObject
 import java.util.Locale
+import java.util.concurrent.CopyOnWriteArrayList
 import javax.swing.DefaultListSelectionModel
 import javax.swing.Icon
 import javax.swing.JButton
@@ -104,7 +105,7 @@ class RowTableModel<T : Any>(
         ): Component =
             createButtonColumn(rowTableModel, row, factory)
 
-        private val cellEditorListeners: MutableList<CellEditorListener> = mutableListOf()
+        private val cellEditorListeners: MutableList<CellEditorListener> = CopyOnWriteArrayList()
 
         override fun getCellEditorValue(): Any =
             createButtonColumn(rowTableModel, 0, factory)
@@ -237,7 +238,7 @@ class RowTableModel<T : Any>(
         }
 
         private fun getPropertyClass(property: KProperty1<*, Any?>): KClass<*> =
-            property.returnType.classifier as KClass<*>
+            property.returnType.javaClass.kotlin
 
     }
 
@@ -353,10 +354,12 @@ class RowTableModel<T : Any>(
         else properties[columnIndex].second.get(model[rowIndex])
 
     override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
-        properties[columnIndex].second
-            .also { require(it is KMutableProperty1<T, Any?>) }
-            .let { it as KMutableProperty1<T, Any?> }
-            .also { it.set(model[rowIndex], aValue) }
+        if (columnIndex < properties.size) {
+            properties[columnIndex].second
+                .also { require(it is KMutableProperty1<T, Any?>) }
+                .let { it as KMutableProperty1<T, Any?> }
+                .also { it.set(model[rowIndex], aValue) }
+        }
     }
 
     override fun addTableModelListener(l: TableModelListener) {

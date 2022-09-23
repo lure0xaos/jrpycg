@@ -4,6 +4,8 @@ package com.github.lure0xaos.util
 
 import com.github.lure0xaos.util.log.Log
 import java.awt.Image
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.awt.image.BufferedImage
 import java.io.InputStream
 import java.net.URL
@@ -138,6 +140,23 @@ operator fun ResourceBundle.get(key: String, def: String): String =
 
 operator fun ResourceBundle.get(key: String): String =
     get(key, key)
+
+fun <E : Any> MutableList<E>.setAll(list: List<E>) {
+    clear()
+    this += list
+}
+
+fun putClipboard(data: String) {
+    Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(data), null)
+}
+
+fun String.capitalizeWords(
+    locale: Locale = Locale.getDefault(),
+    vararg delimiters: String = arrayOf(" ", "\t")
+): String =
+    split(*delimiters).joinToString(" ") { s: String ->
+        s.replaceFirstChar { if (it.isLowerCase()) it.titlecase(locale) else it.toString() }
+    }
 
 private val PLACEHOLDER: Regex = Regex("\\$\\{([^}]+)}")
 private val SHORT_PLACEHOLDER: Regex = Regex("\\{([^}]+)}")

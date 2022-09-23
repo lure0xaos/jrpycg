@@ -3,6 +3,7 @@ package com.github.lure0xaos.jrpycg.services
 import com.github.lure0xaos.util.format
 import com.github.lure0xaos.util.get
 import com.github.lure0xaos.util.getResourceBundle
+import com.github.lure0xaos.util.log.Log
 import com.github.lure0xaos.util.ui.dialog.ButtonFactory
 import com.github.lure0xaos.util.ui.dialog.ButtonType
 import com.github.lure0xaos.util.ui.dialog.DialogType
@@ -84,6 +85,7 @@ class Email(localeHolder: LocaleHolder) {
 
         fun install(parent: Component, localeHolder: LocaleHolder, panelCustomizer: JPanel.() -> Unit = {}) {
             Thread.setDefaultUncaughtExceptionHandler { _, error: Throwable ->
+                Log.error(error) { error.localizedMessage ?: "" }
                 Email(localeHolder).askAndEmail(parent = parent, error = error, panelCustomizer = panelCustomizer) {}
             }
         }
