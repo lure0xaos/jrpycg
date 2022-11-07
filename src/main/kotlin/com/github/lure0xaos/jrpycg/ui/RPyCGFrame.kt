@@ -38,6 +38,7 @@ import com.github.lure0xaos.util.ui.main.JExtFrame
 import com.github.lure0xaos.util.ui.preloader.Preloader
 import com.github.lure0xaos.util.ui.swing
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.GridLayout
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
@@ -136,21 +137,33 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
         get() = Path(preferences[PREF_GAME, USER_HOME.toString()])
         set(gameDirectory) = preferences.put(PREF_GAME, gameDirectory.toFile().absolutePath)
 
-    private val chooser = JDirectoryChooser { _, value, _, expanded, _, _, _ ->
-        val path = value.directory
-        icon = if (path.isDirectory()) {
-            if (isGameDirectory(path)) {
-                if (expanded) ResIcon.GAME_FOLDER_OPEN.icon else ResIcon.GAME_FOLDER.icon
+    private val chooser = JDirectoryChooser(
+        customizer = {
+            preferredSize = Dimension(this@RPyCGFrame.width / 2, this@RPyCGFrame.height)
+        },
+        decorator = { _, value, _, expanded, _, _, _ ->
+            val path = value.directory
+            icon = if (path.isDirectory()) {
+                if (isGameDirectory(path)) {
+                    if (expanded) ResIcon.GAME_FOLDER_OPEN.icon else ResIcon.GAME_FOLDER.icon
+                } else {
+                    if (expanded) ResIcon.FOLDER_OPEN.icon else ResIcon.FOLDER.icon
+                }
             } else {
-                if (expanded) ResIcon.FOLDER_OPEN.icon else ResIcon.FOLDER.icon
+                ResIcon.FILE.icon
             }
-        } else {
-            ResIcon.FILE.icon
-        }
-    }.apply {
+        }).apply {
         setSelectedDirectory(gameDirectory)
     }
 
+    private fun canGenerate(): Boolean =
+        (!isActiveCreator() || !creator.isChanged || runCatching {
+            if (creator.isChanged) builder.setUiRoot(ScriptConverter.fromScript(creator.script))
+        }.onSuccess {
+            creator.isChanged = false
+        }.isSuccess && creator.checkErrors().isSuccess).also {
+            settingsPanel.persist()
+        }
 
     init {
         Email.install(this, localeHolder) {}
@@ -266,8 +279,7 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
                     ),
                     JDropdownButton(resources[LC_BOTTOM_GENERATE], ResIcon.GENERATE.icon,
                         JMenuItem(resources[LC_BOTTOM_GENERATE_CLIPBOARD]) {
-                            settingsPanel.persist()
-                            if (!isActiveCreator() || creator.checkErrors().isSuccess) {
+                            if (canGenerate()) {
                                 putClipboard(
                                     CodeGenerator.generate(builder.getModel(), settingsPanel.settings)
                                         .joinToString("\n")
@@ -282,8 +294,7 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
                             }
                         },
                         JMenuItem(resources[LC_BOTTOM_GENERATE_FILE]) {
-                            settingsPanel.persist()
-                            if (!isActiveCreator() || creator.checkErrors().isSuccess) {
+                            if (canGenerate()) {
                                 chooser.setSelectedDirectory(gameDirectory)
                                 chooser.showDialog(
                                     this@RPyCGFrame,

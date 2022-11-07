@@ -39,8 +39,9 @@ class CheatVariablePanel(
             ): Component =
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
                     .apply {
-                        text = (if (index == -1) "" else (value as VarType).text)
-                        icon = (if (index == -1) null else (value as VarType).icon)
+                        val varType = value as? VarType
+                        text = (varType?.text ?: "")
+                        icon = varType?.icon
                     }
         }
         selectedItem = typeValue

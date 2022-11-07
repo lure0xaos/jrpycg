@@ -29,7 +29,7 @@ object ScriptConverter {
         for (line in lines) line.trim().let {
             if (it == ">") item = item.parent ?: return root
             else if (it.startsWith('<')) item = it.removePrefix("<").let {
-                item.createMenu(it.substringBefore(';'), it.substringBefore(';'))
+                item.createMenu(it.substringBefore(';'), it.substringAfter(';'))
             } else if (it.isNotBlank()) {
                 Regex("^([^=(]+)(?:=(.+))?\\((.+)\\)(?:;(.+))?$").find(it)?.groupValues?.let { values ->
                     item.createVariable(values[1], values[4], values[2], VarType.find(values[3]))
