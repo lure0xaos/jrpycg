@@ -106,7 +106,7 @@ object CodeGenerator {
             "    jump CheatMenu",
             "label CheatMenu:",
             "    menu:"
-        ) + createCheatSubmenu(2, root, "CheatMenu", resources).indent("    ", 2) + listOf(
+        ) + createCheatSubmenu(1, root, "CheatMenu", resources).indent("    ", 2) + listOf(
             "        # nevermind",
             "        \"~${resources[LC_NEVERMIND, MSG_NEVERMIND]}~\":",
             "            return"
@@ -148,7 +148,7 @@ object CodeGenerator {
                     buffer += "\"~${itemLabel}~\":"
                     buffer += "    label ${itemName}:"
                     buffer += "        menu:"
-                    buffer += createCheatSubmenu(indent + 1, item, itemName, resources).indent("    ", indent + 1)
+                    buffer += createCheatSubmenu(indent + 1, item, itemName, resources).indent("    ", 3)
                     buffer += "            # back"
                     buffer += "            \"~${resources[LC_BACK, MSG_BACK]}~\":"
                     buffer += "                jump $parentLabel"

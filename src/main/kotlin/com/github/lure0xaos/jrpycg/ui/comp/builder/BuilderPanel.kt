@@ -32,6 +32,8 @@ import javax.swing.JScrollPane
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreeNode
+import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
 
@@ -61,8 +63,11 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
             override fun mouseClicked(e: MouseEvent) {
                 if (e.isRightMouseButton) {
                     setSelectionRow(getClosestRowForLocation(e.x, e.y))
-                    updatePopup(fromTreeNode((selectionModel.selectionPath).lastPathComponent))
-                    popupMenu.show(e.component, e.x, e.y)
+                    val selectionPath = selectionModel.selectionPath
+                    if (selectionPath != null) {
+                        updatePopup(fromTreeNode(selectionPath.lastPathComponent))
+                        popupMenu.show(e.component, e.x, e.y)
+                    }
                 }
             }
         })
@@ -92,6 +97,9 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
             swing {
                 treeModel.setRoot(it)
                 treeModel.reload(it)
+                for (child in it.children()) {
+                    expandPath(child)
+                }
             }
         }
     }
@@ -116,6 +124,7 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
             popupMenu.add(JMenuItem(resources[LC_POPUP_MENU_CREATE]) {
                 onNewMenu { nameValue: String, labelValue: String ->
                     uiItem.createMenu(treeModel, nameValue, labelValue)
+                    expandNode(uiItem)
                 }
             })
             popupMenu.add(JMenuItem(resources[LC_POPUP_VARIABLE_CREATE]) {
@@ -129,6 +138,7 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
     val callbackNewRootMenu: (String, String) -> UiModelItem = { nameValue: String, labelValue: String ->
         fromTreeNode(treeModel.root).createMenu(treeModel, nameValue, labelValue)
     }
+
     val callbackNewRootItem: (String, String, String, VarType) -> UiModelItem =
         { nameValue: String, labelValue: String, valueValue: String, typeValue: VarType ->
             fromTreeNode(treeModel.root).createVariable(treeModel, nameValue, labelValue, valueValue, typeValue)
@@ -136,6 +146,14 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
 
     fun isEmpty(): Boolean =
         (treeModel.root as DefaultMutableTreeNode).childCount == 0
+
+    private fun expandNode(uiModelItem: UiModelItem) {
+        UiModelItem.findNode(treeModel, uiModelItem)?.also { expandPath(it) }
+    }
+
+    private fun expandPath(node: TreeNode) {
+        tree.expandPath(TreePath(treeModel.getPathToRoot(node)))
+    }
 
     private fun onDeleteItem(uiItem: UiModelItem) {
         uiItem.removeFromParent(treeModel)
@@ -149,7 +167,7 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
             this, resources[LC_DIALOG_MENU_EDIT], Dialog.ModalityType.APPLICATION_MODAL, menuPanel, DialogType
                 .OK_CANCEL, {
                 if (it.isCancel) null else menuPanel
-            }, { panel -> panel.validateItem() + checkDuplicate(panel) }, Closing.DISPOSE
+            }, { panel -> panel.validateItem() + checkDuplicate(panel, item) }, Closing.DISPOSE
         ).showAndWait()?.also {
             swing {
                 item.name = it.nameValue
@@ -167,7 +185,7 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
             this, resources[LC_DIALOG_VARIABLE_EDIT], Dialog.ModalityType.APPLICATION_MODAL, menuItemPanel, DialogType
                 .OK_CANCEL, {
                 if (it.isCancel) null else menuItemPanel
-            }, { panel -> panel.validateItem() + checkDuplicate(panel) }, Closing.DISPOSE
+            }, { panel -> panel.validateItem() + checkDuplicate(panel, item) }, Closing.DISPOSE
         ).showAndWait()?.also {
             swing {
                 item.name = it.nameValue
@@ -192,7 +210,7 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
             {
                 if (it.isCancel) null else menuPanel
             },
-            { panel -> panel.validateItem() + checkDuplicate(panel) }, Closing.DISPOSE
+            { panel -> panel.validateItem() + checkDuplicate(panel, null) }, Closing.DISPOSE
         ).showAndWait()?.also {
             callback(it.nameValue, it.labelValue)
         }
@@ -211,33 +229,29 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
             {
                 if (it.isCancel) null else menuItemPanel
             },
-            { panel -> panel.validateItem() + checkDuplicate(panel) }, Closing.DISPOSE
+            { panel -> panel.validateItem() + checkDuplicate(panel, null) }, Closing.DISPOSE
         ).showAndWait()?.also {
             callback(it.nameValue, it.labelValue, it.valueValue, it.typeValue)
         }
     }
 
-    private fun checkDuplicate(panel: CheatMenuPanel) =
-        if (UiModelItem.findNode(treeModel) { it.name == panel.nameValue } == null) emptyList()
-        else listOf<Pair<List<String>, JComponent>>(
-            listOf(resources[LC_VALIDATION_ITEM_DUPLICATE]) to panel
-        )
+    private fun checkDuplicate(panel: CheatMenuPanel, item: UiModelItem?): List<Pair<List<String>, JComponent>> =
+        checkDuplicate(panel, item) { it.name == panel.nameValue }
 
-    private fun checkDuplicate(panel: CheatVariablePanel) =
-        if (UiModelItem.findNode(treeModel) { it.name == panel.nameValue } == null) emptyList()
-        else listOf<Pair<List<String>, JComponent>>(
-            listOf(resources[LC_VALIDATION_ITEM_DUPLICATE]) to panel
-        )
+    private fun checkDuplicate(panel: CheatVariablePanel, item: UiModelItem?): List<Pair<List<String>, JComponent>> =
+        checkDuplicate(panel, item) { it.name == panel.nameValue }
+
+    private fun checkDuplicate(comp: JComponent, item: UiModelItem?, check: (UiModelItem) -> Boolean)
+            : List<Pair<List<String>, JComponent>> =
+        if (UiModelItem.findNodes(treeModel) { it != item && check(it) }.isEmpty()) emptyList()
+        else listOf(listOf(resources[LC_VALIDATION_ITEM_DUPLICATE]) to comp)
 
     private fun setPanelPreferredSize(panel: JPanel) {
-        panel.preferredSize = size?.let { Dimension((it.width * 0.75).toInt(), (it.height * 0.5).toInt()) }
+        panel.preferredSize = size?.let { Dimension((it.width * 0.75).toInt(), it.height / 2) }
     }
 
     init {
-        apply {
-            add(JScrollPane(tree).apply {
-            }, BorderLayout.CENTER)
-        }
+        add(JScrollPane(tree), BorderLayout.CENTER)
     }
 
     companion object {

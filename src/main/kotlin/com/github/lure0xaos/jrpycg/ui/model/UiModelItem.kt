@@ -38,6 +38,10 @@ class UiModelItem private constructor(
         }
     }
 
+    fun getParent(model: DefaultTreeModel): UiModelItem {
+        return fromTreeNode((findNode(model, this) as MutableTreeNode).parent)
+    }
+
     fun removeFromParent(model: DefaultTreeModel) {
         model.removeNodeFromParent(findNode(model, this) as MutableTreeNode)
     }
@@ -75,6 +79,13 @@ class UiModelItem private constructor(
 
         fun findNode(model: DefaultTreeModel, item: UiModelItem): TreeNode? =
             findNode(model) { (it) == item }
+
+        fun findNodes(model: DefaultTreeModel, criteria: (UiModelItem) -> Boolean): List<TreeNode> =
+            (model.root as DefaultMutableTreeNode).depthFirstEnumeration().toList()
+                .filter { criteria(fromTreeNode(it)) }
+
+        fun findNodes(model: DefaultTreeModel, item: UiModelItem): List<TreeNode> =
+            findNodes(model) { (it) == item }
 
         fun clear(model: DefaultTreeModel) {
             (model.root as DefaultMutableTreeNode).children().toList().forEach {

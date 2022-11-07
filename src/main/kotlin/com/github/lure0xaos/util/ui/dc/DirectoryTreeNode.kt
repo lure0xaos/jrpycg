@@ -9,13 +9,12 @@ import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 
-class DirectoryTreeNode(val directory: Path) : MutableTreeNode {
-    constructor() : this(Path(""))
+class DirectoryTreeNode private constructor(val directory: Path, private val parentNode: DirectoryTreeNode?) :
+    MutableTreeNode, Comparable<DirectoryTreeNode> {
 
-    private val parentNode: DirectoryTreeNode? = if (isRoot()) null else directory.parent?.let { DirectoryTreeNode(it) }
-    private val childrenNodes: MutableList<DirectoryTreeNode> =
-        if (isRoot()) directory.fileSystem.rootDirectories.map { DirectoryTreeNode(it) }.toMutableList()
-        else mutableListOf()
+    constructor() : this(Path(""), null)
+
+    private val childrenNodes: MutableList<DirectoryTreeNode>
 
     fun isRoot(): Boolean = directory.toString().isEmpty()
 
@@ -51,21 +50,40 @@ class DirectoryTreeNode(val directory: Path) : MutableTreeNode {
     override fun setParent(newParent: MutableTreeNode?) {
     }
 
+    @Synchronized
     fun update(): Boolean {
         val newPaths: List<Path> =
             runCatching { directory.listDirectoryEntries().filter { it.isDirectory() } }.getOrDefault(listOf())
-        childrenNodes.filter { it.directory !in newPaths }.also { childrenNodes.removeAll(it) }
-        childrenNodes +=
-            newPaths.filter { path: Path -> path !in childrenNodes.map { it.directory } }.map { DirectoryTreeNode(it) }
-        return true
+        val toRemove = childrenNodes.filter { it.directory !in newPaths }
+        val toRemoveSize = toRemove.size
+        if (toRemove.isNotEmpty()) childrenNodes.removeAll(toRemove)
+        val toAdd = newPaths.filter { path: Path -> path !in childrenNodes.map { it.directory } }.map {
+            DirectoryTreeNode(it, this)
+        }
+        val toAddSize = toAdd.size
+        if (toAdd.isNotEmpty()) childrenNodes += toAdd
+        if (toAddSize != 0)
+            childrenNodes.sort()
+        return toRemoveSize != 0 || toAddSize != 0
     }
+
+    override fun compareTo(other: DirectoryTreeNode): Int =
+        directory.compareTo(other.directory)
 
     override fun equals(other: Any?): Boolean =
         if (this === other) true else if (other !is DirectoryTreeNode) false else directory == other.directory
 
-    override fun hashCode(): Int = directory.hashCode()
+    override fun hashCode(): Int =
+        directory.hashCode()
 
     override fun toString(): String =
-        "DirectoryTreeNode(directory=$directory, parentNode=$parentNode, childrenNodes=$childrenNodes)"
+        "DirectoryTreeNode(directory=$directory, hasChildren=${childrenNodes.isNotEmpty()})"
+
+    init {
+        this.childrenNodes =
+            if (isRoot()) directory.fileSystem.rootDirectories.map { DirectoryTreeNode(it, this) }
+                .sorted().toMutableList()
+            else mutableListOf()
+    }
 
 }
