@@ -153,7 +153,7 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
                 ResIcon.FILE.icon
             }
         }).apply {
-        setSelectedDirectory(gameDirectory)
+        selectedDirectory = gameDirectory
     }
 
     private fun canGenerate(): Boolean =
@@ -295,7 +295,7 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
                         },
                         JMenuItem(resources[LC_BOTTOM_GENERATE_FILE]) {
                             if (canGenerate()) {
-                                chooser.setSelectedDirectory(gameDirectory)
+                                chooser.selectedDirectory = gameDirectory
                                 chooser.showDialog(
                                     this@RPyCGFrame,
                                     resources[LC_TITLE_GENERATE_FILE]

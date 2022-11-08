@@ -11,6 +11,8 @@ import java.awt.Dialog
 import java.awt.Frame
 import java.awt.Insets
 import java.awt.Window
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.awt.event.KeyEvent
 import java.util.concurrent.Semaphore
 import javax.swing.BorderFactory
@@ -83,6 +85,9 @@ class UIDialog<C : JComponent, R : Any>(
     private val semaphore: Semaphore = Semaphore(1)
     private lateinit var button: ButtonType
 
+    var onShow: () -> Unit = {}
+    var onHide: () -> Unit = {}
+
     private fun onAction(buttonType: ButtonType) {
         button = buttonType
         result = resultConverter(button)
@@ -107,6 +112,15 @@ class UIDialog<C : JComponent, R : Any>(
     }
 
     init {
+        addComponentListener(object : ComponentAdapter() {
+            override fun componentShown(e: ComponentEvent?) {
+                onShow()
+            }
+
+            override fun componentHidden(e: ComponentEvent?) {
+                onHide()
+            }
+        })
         parent.also { if (it is Window) iconImages = it.iconImages }
         defaultCloseOperation = when (onClose) {
             Closing.HIDE -> HIDE_ON_CLOSE
