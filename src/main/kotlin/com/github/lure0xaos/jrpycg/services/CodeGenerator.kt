@@ -4,6 +4,7 @@ import com.github.lure0xaos.jrpycg.model.ModelItem
 import com.github.lure0xaos.jrpycg.model.Settings
 import com.github.lure0xaos.jrpycg.model.VarType
 import com.github.lure0xaos.jrpycg.res.Res
+import com.github.lure0xaos.util.StringListBuilder.Companion.buildStringList
 import com.github.lure0xaos.util.findResourceBundleLocales
 import com.github.lure0xaos.util.format
 import com.github.lure0xaos.util.get
@@ -112,50 +113,49 @@ object CodeGenerator {
             "            return"
         )
 
-    private fun createCheatSubmenu(root: ModelItem, parentLabel: String, resources: ResourceBundle): List<String> {
-        val buffer: MutableList<String> = mutableListOf()
-        for (item in root.children) {
-            val itemName = item.name
-            val itemLabel = item.label
-            when {
-                item.isVariable() -> {
-                    val itemType = item.type
-                    val itemValue = item.value
-                    buffer += "# variable ${itemName}=${itemType}(${itemValue}) $itemLabel"
-                    val itemTypeKeyword = itemType.keyword
-                    if (item.value.isNotBlank()) {
-                        buffer += "\"$${itemLabel}=${itemValue} \\[[${itemName}]\\]\"${check(itemName)} :"
-                        buffer += "    $${itemName} = " +
-                                (if (VarType.STR == itemType) "${itemTypeKeyword}(\"${itemValue}\")"
-                                else "${itemTypeKeyword}(\"${itemValue}\")")
-                    } else {
-                        buffer += "\"$itemLabel \\[[${itemName}]\\]\" ${check(itemName)} :"
-                        val message = resources[LC_MESSAGE_PROMPT, MSG_MESSAGE_PROMPT].format(
-                            mapOf(
-                                "label" to itemLabel,
-                                "value" to "[$itemName]"
+    private fun createCheatSubmenu(root: ModelItem, parentLabel: String, resources: ResourceBundle): List<String> =
+        buildStringList {
+            for (item in root.children) {
+                val itemName = item.name
+                val itemLabel = item.label
+                when {
+                    item.isVariable() -> {
+                        val itemType = item.type
+                        val itemValue = item.value
+                        +"# variable ${itemName}=${itemType}(${itemValue}) $itemLabel"
+                        val itemTypeKeyword = itemType.keyword
+                        if (item.value.isNotBlank()) {
+                            +"\"$${itemLabel}=${itemValue} \\[[${itemName}]\\]\"${check(itemName)} :"
+                            +("    $${itemName} = " +
+                                    (if (VarType.STR == itemType) "${itemTypeKeyword}(\"${itemValue}\")"
+                                    else "${itemTypeKeyword}(\"${itemValue}\")"))
+                        } else {
+                            +"\"$itemLabel \\[[${itemName}]\\]\" ${check(itemName)} :"
+                            val message = resources[LC_MESSAGE_PROMPT, MSG_MESSAGE_PROMPT].format(
+                                mapOf(
+                                    "label" to itemLabel,
+                                    "value" to "[$itemName]"
+                                )
                             )
-                        )
-                        val allow = itemType.allowed?.let { ", allow=\"$it\"" } ?: ""
-                        buffer += "    $${itemName} = ${itemTypeKeyword}(renpy.input(\"$message\"$allow).strip() or ${itemName})"
+                            val allow = itemType.allowed?.let { ", allow=\"$it\"" } ?: ""
+                            +"    $${itemName} = ${itemTypeKeyword}(renpy.input(\"$message\"$allow).strip() or ${itemName})"
+                        }
+                        +"    jump $parentLabel"
                     }
-                    buffer += "    jump $parentLabel"
-                }
 
-                item.isMenu() -> {
-                    buffer += "# menu $itemLabel"
-                    buffer += "\"~${itemLabel}~\":"
-                    buffer += "    label ${itemName}:"
-                    buffer += "        menu:"
-                    buffer += createCheatSubmenu(item, itemName, resources).indent(3)
-                    buffer += "            # back"
-                    buffer += "            \"~${resources[LC_BACK, MSG_BACK]}~\":"
-                    buffer += "                jump $parentLabel"
+                    item.isMenu() -> {
+                        +"# menu $itemLabel"
+                        +"\"~${itemLabel}~\":"
+                        +"    label ${itemName}:"
+                        +"        menu:"
+                        +createCheatSubmenu(item, itemName, resources).indent(3)
+                        +"            # back"
+                        +"            \"~${resources[LC_BACK, MSG_BACK]}~\":"
+                        +"                jump $parentLabel"
+                    }
                 }
             }
         }
-        return buffer
-    }
 
     private fun check(itemName: String) =
         when {
