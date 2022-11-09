@@ -54,16 +54,25 @@ object CodeGenerator {
     private fun enableDeveloper2(settings: Settings): List<String> =
         listOf(
             "# Enable developer mode",
-            "config.keymap[\"developer\"] = [\"${settings.keyDeveloper.toBinding()}\"]",
-            "config.underlay.append(renpy.Keymap(cheat_menu_bind=enable_cheat_menu))"
+            "config.keymap[\"developer\"] = [\"${settings.keyDeveloper.toBinding()}\"]"
         )
 
     private fun enableCheat(settings: Settings): List<String> =
         listOf(
             "# Define function to open the menu",
-            "def enable_cheat_menu():",
+            "def rpycg_enable_cheat_menu():",
             "    renpy.call_in_new_context(\"show_cheat_menu\")",
-            "config.keymap[\"cheat_menu_bind\"] = [\"${settings.keyCheat.toBinding()}\"]"
+            "def rpycg_exists(obj, attr):",
+            "    try:",
+            "        left, right = attr.split('.', 1)",
+            "    except:",
+            "        return hasattr(obj, attr)",
+            "    if hasattr(obj, left):",
+            "        return rpycg_exists(getattr(obj, left), right)",
+            "    else:",
+            "        return False",
+            "config.keymap[\"cheat_menu_bind\"] = [\"${settings.keyCheat.toBinding()}\"]",
+            "config.underlay.append(renpy.Keymap(cheat_menu_bind=rpycg_enable_cheat_menu))"
         )
 
     private fun enableRollback(): List<String> =
@@ -75,27 +84,27 @@ object CodeGenerator {
     private fun enableWrite(settings: Settings): List<String> =
         listOf(
             "# Define function to write variables to file",
-            "def write_variables():",
+            "def rpycg_write_variables():",
             "    renpy.call_in_new_context(\"write_variables_to_file\")",
             "# Enable write variables to file",
             "config.keymap[\"write_variables_bind\"] = [\"${settings.keyWrite.toBinding()}\"]",
-            "config.underlay.append(renpy.Keymap(write_variables_bind=write_variables))",
+            "config.underlay.append(renpy.Keymap(write_variables_bind=rpycg_write_variables))",
         )
 
     private fun enableWrite2(resources: ResourceBundle): List<String> =
         listOf(
             "# Find unique game variables",
             "label write_variables_to_file:",
-            "    $ f = open(\"${resources[LC_FILE_VARIABLES, MSG_GAME_VARIABLES]}.txt\", \"w+\")",
-            "    define in_game_defaults = set(\",\".join(globals()).split(\",\"))",
-            "    $ in_game_diff = \"\\n\".join(sorted(set(set(\",\".join(globals()).split(\",\"))).difference(in_game_defaults))).split(\"\\n\")",
-            "    define new_game_defaults = []",
+            "    $ rpycg_f = open(\"${resources[LC_FILE_VARIABLES, MSG_GAME_VARIABLES]}.txt\", \"w+\")",
+            "    define rpycg_in_game_defaults = set(\",\".join(globals()).split(\",\"))",
+            "    $ rpycg_in_game_diff = \"\\n\".join(sorted(set(set(\",\".join(globals()).split(\",\"))).difference(rpycg_in_game_defaults))).split(\"\\n\")",
+            "    define rpycg_new_game_defaults = []",
             "    python:",
-            "        for item in in_game_diff:",
-            "            if not str(item) in [\"f\", \"enable_cheat_menu\", \"write_variables\", \"new_game_defaults\", \"in_game_defaults\", \"in_game_diff\", \"_history_list\"]:",
-            "                new_game_defaults.append(str(item) + \" = \" + str(repr(globals().get(item))) + \"\\n\")",
-            "    $ f.write(\"\\n\".join([unicode(i) for i in new_game_defaults]))",
-            "    $ f.close()",
+            "        for item in rpycg_in_game_diff:",
+            "            if not str(item) in [\"rpycg_f\", \"rpycg_exists\", \"rpycg_enable_cheat_menu\", \"rpycg_write_variables\", \"rpycg_new_game_defaults\", \"rpycg_in_game_defaults\", \"rpycg_in_game_diff\", \"_history_list\"]:",
+            "                rpycg_new_game_defaults.append(str(item) + \" = \" + str(repr(globals().get(item))) + \"\\n\")",
+            "    $ rpycg_f.write(\"\\n\".join([unicode(i) for i in rpycg_new_game_defaults]))",
+            "    $ rpycg_f.close()",
             "    \"${resources[LC_MESSAGE_WRITTEN, MSG_VARIABLES_WRITTEN]}\"",
             "    return"
         )
@@ -125,12 +134,12 @@ object CodeGenerator {
                         +"# variable ${itemName}=${itemType}(${itemValue}) $itemLabel"
                         val itemTypeKeyword = itemType.keyword
                         if (item.value.isNotBlank()) {
-                            +"\"$${itemLabel}=${itemValue} \\[[${itemName}]\\]\"${check(itemName)} :"
+                            +"\"$${itemLabel}=${itemValue} \\[[${itemName}]\\]\"${check(itemName)}:"
                             +("    $${itemName} = " +
                                     (if (VarType.STR == itemType) "${itemTypeKeyword}(\"${itemValue}\")"
                                     else "${itemTypeKeyword}(\"${itemValue}\")"))
                         } else {
-                            +"\"$itemLabel \\[[${itemName}]\\]\" ${check(itemName)} :"
+                            +"\"$itemLabel \\[[${itemName}]\\]\" ${check(itemName)}:"
                             val message = resources[LC_MESSAGE_PROMPT, MSG_MESSAGE_PROMPT].format(
                                 mapOf(
                                     "label" to itemLabel,
@@ -157,12 +166,12 @@ object CodeGenerator {
             }
         }
 
-    private fun check(itemName: String) =
-        when {
-            itemName.contains('.') && !itemName.contains('[') -> "if '${itemName.substringBefore('.')}' in globals()"
-            !itemName.contains('.') && !itemName.contains('[') -> "if '${itemName}' in globals()"
-            else -> ""
-        }
+    private fun check(itemName: String): String =
+        if (itemName.contains('[')) ""
+        else if (itemName.contains('.'))
+            "if '${itemName.substringBefore('.')}' in globals()" +
+                    " and rpycg_exists(globals()['${itemName.substringBefore('.')}'], '${itemName.substringAfter('.')}')"
+        else "if '${itemName}' in globals()"
 
     private fun List<String>.indent(count: Int, string: String = "    "): List<String> =
         this.map { string.repeat(count) + it }
