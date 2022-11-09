@@ -18,11 +18,16 @@ class UiModelItem private constructor(
     fun isVariable(): Boolean = menuType == ModelType.VAR
     fun isRoot(): Boolean = this == createRoot()
 
-    fun createMenu(model: DefaultTreeModel, name: String, label: String): UiModelItem {
+    fun createMenu(
+        model: DefaultTreeModel,
+        name: String,
+        label: String,
+        initializer: UiModelItem.() -> Unit = { }
+    ): UiModelItem {
         require(isMenu() || isRoot())
         return UiModelItem(ModelType.MENU, name, label, "", VarType.STR).also {
             addNode(model, it, findNode(model, this)!!)
-        }
+        }.apply(initializer)
     }
 
     fun createVariable(
@@ -63,8 +68,8 @@ class UiModelItem private constructor(
         "UICheatItem(menuType=$menuType, name='$name', label='$label', value='$value', type=$type)"
 
     companion object {
-        fun createRoot(): UiModelItem =
-            UiModelItem(ModelType.ROOT, "", "", "", VarType.STR)
+        fun createRoot(initializer: UiModelItem.() -> Unit = { }): UiModelItem =
+            UiModelItem(ModelType.ROOT, "", "", "", VarType.STR).apply(initializer)
 
         fun fromTreeNode(value: Any): UiModelItem = ((value as DefaultMutableTreeNode).userObject as UiModelItem)
 

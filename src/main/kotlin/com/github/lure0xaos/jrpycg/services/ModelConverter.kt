@@ -13,13 +13,13 @@ object ModelConverter {
         UiModelItem.fromTreeNode(node).let { item ->
             when {
                 item.isVariable() -> root.createVariable(item.name, item.label, item.value, item.type)
-                item.isMenu() -> root.createMenu(item.name, item.label).apply {
+                item.isMenu() -> root.createMenu(item.name, item.label) {
                     (0 until model.getChildCount(node)).map { model.getChild(node, it) }.forEach {
                         toModel(model, it as TreeNode, this)
                     }
                 }
 
-                item.isRoot() -> ModelItem.createRoot().apply {
+                item.isRoot() -> ModelItem.createRoot {
                     (0 until model.getChildCount(node)).map { model.getChild(node, it) }.forEach {
                         toModel(model, it as TreeNode, this)
                     }
@@ -43,7 +43,7 @@ object ModelConverter {
             }
 
             item.isMenu() -> {
-                val uiCheatItem = uiItem.createMenu(model, item.name, item.label).apply {
+                val uiCheatItem = uiItem.createMenu(model, item.name, item.label) {
                     item.children.forEach {
                         toModel(model, it, this)
                     }
@@ -52,7 +52,7 @@ object ModelConverter {
             }
 
             item.isRoot() -> {
-                UiModelItem.findNode(model, UiModelItem.createRoot().apply {
+                UiModelItem.findNode(model, UiModelItem.createRoot {
                     item.children.forEach {
                         toModel(model, it, this)
                     }

@@ -281,7 +281,7 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
                         JMenuItem(resources[LC_BOTTOM_GENERATE_CLIPBOARD]) {
                             if (canGenerate()) {
                                 putClipboard(
-                                    CodeGenerator.generate(builder.getModel(), settingsPanel.settings)
+                                    CodeGenerator(settingsPanel.settings).generate(builder.getModel())
                                         .joinToString("\n")
                                 )
                                 this@RPyCGFrame.alert(resources[LC_SUCCESS_GENERATE_CLIPBOARD])
@@ -302,10 +302,7 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
                                 ) { isGameDirectory(it) }
                                     ?.let { toGameDirectory(it) }?.also {
                                         it.writeLines(
-                                            CodeGenerator.generate(
-                                                builder.getModel(),
-                                                settingsPanel.settings
-                                            )
+                                            CodeGenerator(settingsPanel.settings).generate(builder.getModel())
                                         )
                                     }?.also {
                                         gameDirectory = it.parent.parent

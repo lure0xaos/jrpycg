@@ -17,6 +17,7 @@ It's feature complete comparing to RPyCG:
 
 - 13.10.2022 18:00 - First Release version
 - 09.11.2022 20:00 - **Some major bugs fixed**
+- 10.11.2022 22:00 - *Dump variables improvement*
 
 ## Notes from RPyCG
 

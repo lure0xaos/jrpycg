@@ -13,11 +13,11 @@ class ModelItem private constructor(
     fun isVariable(): Boolean = menuType == ModelType.VAR
     fun isRoot(): Boolean = menuType == ModelType.ROOT
 
-    fun createMenu(name: String, label: String): ModelItem {
+    fun createMenu(name: String, label: String, initializer: ModelItem.() -> Unit = { }): ModelItem {
         require(isMenu() || isRoot())
         return ModelItem(ModelType.MENU, name, label, "", VarType.STR, this).also {
             children += it
-        }
+        }.apply(initializer)
     }
 
     fun createVariable(name: String, label: String, value: String, type: VarType): ModelItem {
@@ -37,8 +37,8 @@ class ModelItem private constructor(
 
 
     companion object {
-        fun createRoot(): ModelItem =
-            ModelItem(ModelType.ROOT, "", "", "", VarType.STR)
+        fun createRoot(initializer: ModelItem.() -> Unit = { }): ModelItem =
+            ModelItem(ModelType.ROOT, "", "", "", VarType.STR).apply(initializer)
 
     }
 
