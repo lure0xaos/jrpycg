@@ -20,13 +20,13 @@ object CodeGenerator {
     fun generate(menu: ModelItem, settings: Settings): List<String> =
         Res::class.getResourceBundle(CodeGenerator::class, settings.localeMenu).let { resources: ResourceBundle ->
             listOf("init 999 python:").also { require(menu.isRoot()) } +
-                    (if (settings.enableConsole) enableConsole().indent("    ", 1) else listOf()) +
-                    (if (settings.enableDeveloper) enableDeveloper().indent("    ", 1) else listOf()) +
-                    (if (settings.enableCheat) enableCheat(settings).indent("    ", 1) else listOf()) +
-                    (if (settings.enableConsole) enableConsole2(settings).indent("    ", 1) else listOf()) +
-                    (if (settings.enableDeveloper) enableDeveloper2(settings).indent("    ", 1) else listOf()) +
-                    (if (settings.enableRollback) enableRollback().indent("    ", 1) else listOf()) +
-                    (if (settings.enableWrite) enableWrite(settings).indent("    ", 1) else listOf()) +
+                    (if (settings.enableConsole) enableConsole().indent(1) else listOf()) +
+                    (if (settings.enableDeveloper) enableDeveloper().indent(1) else listOf()) +
+                    (if (settings.enableCheat) enableCheat(settings).indent(1) else listOf()) +
+                    (if (settings.enableConsole) enableConsole2(settings).indent(1) else listOf()) +
+                    (if (settings.enableDeveloper) enableDeveloper2(settings).indent(1) else listOf()) +
+                    (if (settings.enableRollback) enableRollback().indent(1) else listOf()) +
+                    (if (settings.enableWrite) enableWrite(settings).indent(1) else listOf()) +
                     (if (settings.enableWrite) enableWrite2(resources) else listOf()) +
                     (if (settings.enableCheat) createCheatMenu(menu, resources) else listOf())
         }
@@ -106,14 +106,13 @@ object CodeGenerator {
             "    jump CheatMenu",
             "label CheatMenu:",
             "    menu:"
-        ) + createCheatSubmenu(1, root, "CheatMenu", resources).indent("    ", 2) + listOf(
+        ) + createCheatSubmenu(root, "CheatMenu", resources).indent(2) + listOf(
             "        # nevermind",
             "        \"~${resources[LC_NEVERMIND, MSG_NEVERMIND]}~\":",
             "            return"
         )
 
-    private fun createCheatSubmenu(indent: Int, root: ModelItem, parentLabel: String, resources: ResourceBundle):
-            List<String> {
+    private fun createCheatSubmenu(root: ModelItem, parentLabel: String, resources: ResourceBundle): List<String> {
         val buffer: MutableList<String> = mutableListOf()
         for (item in root.children) {
             val itemName = item.name
@@ -130,15 +129,15 @@ object CodeGenerator {
                                 (if (VarType.STR == itemType) "${itemTypeKeyword}(\"${itemValue}\")"
                                 else "${itemTypeKeyword}(\"${itemValue}\")")
                     } else {
-                        buffer += "\"$itemLabel \\[[${itemName}]\\]\"${check(itemName)} :"
-                        buffer += "    $${itemName} = ${itemTypeKeyword}(renpy.input(\"${
-                            resources[LC_MESSAGE_PROMPT, MSG_MESSAGE_PROMPT].format(
-                                mapOf(
-                                    "label" to itemLabel,
-                                    "value" to "[$itemName]"
-                                )
+                        buffer += "\"$itemLabel \\[[${itemName}]\\]\" ${check(itemName)} :"
+                        val message = resources[LC_MESSAGE_PROMPT, MSG_MESSAGE_PROMPT].format(
+                            mapOf(
+                                "label" to itemLabel,
+                                "value" to "[$itemName]"
                             )
-                        }\").strip() or ${itemName})"
+                        )
+                        val allow = itemType.allowed?.let { ", allow=\"$it\"" } ?: ""
+                        buffer += "    $${itemName} = ${itemTypeKeyword}(renpy.input(\"$message\"$allow).strip() or ${itemName})"
                     }
                     buffer += "    jump $parentLabel"
                 }
@@ -148,7 +147,7 @@ object CodeGenerator {
                     buffer += "\"~${itemLabel}~\":"
                     buffer += "    label ${itemName}:"
                     buffer += "        menu:"
-                    buffer += createCheatSubmenu(indent + 1, item, itemName, resources).indent("    ", 3)
+                    buffer += createCheatSubmenu(item, itemName, resources).indent(3)
                     buffer += "            # back"
                     buffer += "            \"~${resources[LC_BACK, MSG_BACK]}~\":"
                     buffer += "                jump $parentLabel"
@@ -160,12 +159,12 @@ object CodeGenerator {
 
     private fun check(itemName: String) =
         when {
-            itemName.contains('.') && !itemName.contains('[') -> " if '${itemName.substringBefore('.')}' in globals()"
-            !itemName.contains('.') && !itemName.contains('[') -> " if '${itemName}' in globals()"
+            itemName.contains('.') && !itemName.contains('[') -> "if '${itemName.substringBefore('.')}' in globals()"
+            !itemName.contains('.') && !itemName.contains('[') -> "if '${itemName}' in globals()"
             else -> ""
         }
 
-    private fun List<String>.indent(string: String, count: Int) =
+    private fun List<String>.indent(count: Int, string: String = "    "): List<String> =
         this.map { string.repeat(count) + it }
 
     private const val LC_BACK = "back"
