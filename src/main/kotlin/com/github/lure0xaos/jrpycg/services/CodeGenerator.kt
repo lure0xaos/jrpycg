@@ -113,10 +113,10 @@ object CodeGenerator {
     private fun createCheatMenu(root: ModelItem, resources: ResourceBundle): List<String> =
         listOf(
             "label show_cheat_menu:",
-            "    jump CheatMenu",
-            "label CheatMenu:",
+            "    jump rpycg_cheat_menu",
+            "label rpycg_cheat_menu:",
             "    menu:"
-        ) + createCheatSubmenu(root, "CheatMenu", resources).indent(2) + listOf(
+        ) + createCheatSubmenu(root, "rpycg_cheat_menu", resources).indent(2) + listOf(
             "        # nevermind",
             "        \"~${resources[LC_NEVERMIND, MSG_NEVERMIND]}~\":",
             "            return"
@@ -153,11 +153,12 @@ object CodeGenerator {
                     }
 
                     item.isMenu() -> {
+                        val pythonLabel = "rpycg_$itemName"
                         +"# menu $itemLabel"
                         +"\"~${itemLabel}~\":"
-                        +"    label ${itemName}:"
+                        +"    label ${pythonLabel}:"
                         +"        menu:"
-                        +createCheatSubmenu(item, itemName, resources).indent(3)
+                        +createCheatSubmenu(item, pythonLabel, resources).indent(3)
                         +"            # back"
                         +"            \"~${resources[LC_BACK, MSG_BACK]}~\":"
                         +"                jump $parentLabel"
