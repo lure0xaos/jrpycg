@@ -21,38 +21,28 @@ object CodeGenerator {
     fun generate(menu: ModelItem, settings: Settings): List<String> =
         Res::class.getResourceBundle(CodeGenerator::class, settings.localeMenu).let { resources: ResourceBundle ->
             listOf("init 999 python:").also { require(menu.isRoot()) } +
-                    (if (settings.enableConsole) enableConsole().indent(1) else listOf()) +
-                    (if (settings.enableDeveloper) enableDeveloper().indent(1) else listOf()) +
-                    (if (settings.enableCheat) enableCheat(settings).indent(1) else listOf()) +
-                    (if (settings.enableConsole) enableConsole2(settings).indent(1) else listOf()) +
-                    (if (settings.enableDeveloper) enableDeveloper2(settings).indent(1) else listOf()) +
+                    (if (settings.enableConsole) enableConsole(settings).indent(1) else listOf()) +
+                    (if (settings.enableDeveloper) enableDeveloper(settings).indent(1) else listOf()) +
                     (if (settings.enableRollback) enableRollback().indent(1) else listOf()) +
+                    (if (settings.enableCheat) enableCheat(settings).indent(1) else listOf()) +
                     (if (settings.enableWrite) enableWrite(settings).indent(1) else listOf()) +
                     (if (settings.enableWrite) enableWrite2(resources) else listOf()) +
                     (if (settings.enableCheat) createCheatMenu(menu, resources) else listOf())
         }
 
-    private fun enableConsole(): List<String> =
+    private fun enableConsole(settings: Settings): List<String> =
         listOf(
             "# Enable console",
             "config.console = True",
-            "persistent._console_short = False"
-        )
-
-    private fun enableDeveloper(): List<String> =
-        listOf(
-            "# Enable developer mode",
-            "config.developer = True"
-        )
-
-    private fun enableConsole2(settings: Settings): List<String> =
-        listOf(
+            "persistent._console_short = False",
             "# Enable fast console",
             "config.keymap[\"console\"] = [\"${settings.keyConsole.toBinding()}\"]"
         )
 
-    private fun enableDeveloper2(settings: Settings): List<String> =
+    private fun enableDeveloper(settings: Settings): List<String> =
         listOf(
+            "# Enable developer mode",
+            "config.developer = True",
             "# Enable developer mode",
             "config.keymap[\"developer\"] = [\"${settings.keyDeveloper.toBinding()}\"]"
         )
@@ -78,7 +68,16 @@ object CodeGenerator {
     private fun enableRollback(): List<String> =
         listOf(
             "# Enable rollback",
-            "config.rollback_enabled = True"
+            "config.rollback_enabled = True",
+            "renpy.config.hard_rollback_limit = 256",
+            "renpy.config.rollback_length = 256",
+            "def rpycg_noblock( *args, **kwargs ):",
+            "    return",
+            "renpy.block_rollback = rpycg_noblock",
+            "try:",
+            "    config.keymap['rollback'] = ['K_PAGEUP', 'repeat_K_PAGEUP', 'K_AC_BACK', 'mousedown_4']",
+            "except:",
+            "    pass"
         )
 
     private fun enableWrite(settings: Settings): List<String> =
@@ -91,67 +90,50 @@ object CodeGenerator {
             "def rpycg_dump_obj(obj, obj_name = '', level = 0):",
             "    global executions",
             "    global max_executions",
+            "    obj_type = type(obj).__name__",
             "    try:",
             "        if obj_name in ['image_gallery', 'random']:",
-            "            return '\\n BLACKLISTED  (%s) %s %s\\n' % (type(obj).__name__, obj_name, level)",
+            "            return '\\n ERROR BLACKLISTED  (%s) %s %s\\n' % (obj_type, obj_name, level)",
             "        if level > 10:",
-            "            return '\\n RECURSION  (%s) %s %s\\n' % (type(obj).__name__, obj_name, level)",
+            "            return '\\n ERROR RECURSION  (%s) %s %s\\n' % (obj_type, obj_name, level)",
             "        executions += 1",
             "        if executions > max_executions:",
-            "            return 'TOO MANY x (%s) %s %s\\n' % (type(obj).__name__, obj_name, level)",
+            "            return '\\n ERROR TOO MANY x (%s) %s %s\\n' % (obj_type, obj_name, level)",
             "        text = ''",
             "        if obj is None:",
             "            text = '%s -> %s' % (obj_name, 'None')",
-            "        elif isinstance(obj, str):",
-            "            text = '%s -> %s' % (obj_name, str(repr(obj)))",
-            "        elif isinstance(obj, unicode):",
-            "            text = '%s -> %s' % (obj_name, str(repr(obj)))",
-            "        elif isinstance(obj, bool):",
-            "            text = '%s -> %s' % (obj_name, str(repr(obj)))",
-            "        elif isinstance(obj, int):",
-            "            text = '%s -> %s' % (obj_name, str(repr(obj)))",
-            "        elif isinstance(obj, float):",
+            "        elif isinstance(obj, str) or isinstance(obj, unicode) or isinstance(obj, bool) or isinstance(obj, int) or isinstance(obj, float):",
             "            text = '%s -> %s' % (obj_name, str(repr(obj)))",
             "        elif isinstance(obj, dict):",
             "            for key, value in obj.items():",
-            "                text += rpycg_dump_obj(value, '(%s)%s.%s' % (type(obj).__name__, obj_name, key), level + 1)",
+            "                text += rpycg_dump_obj(value, '(%s)%s.%s' % (obj_type, obj_name, key), level + 1)",
             "                executions += 1",
             "                if executions > max_executions:",
-            "                    return 'TOO MANY d %s.%s - %s - %s: %s' % (obj_name, key, level, len(obj.items()), str(obj.items()))",
-            "        elif isinstance(obj, set) or isinstance(obj, frozenset):",
+            "                    return '\\n ERROR TOO MANY d %s.%s - %s - %s: %s' % (obj_name, key, level, len(obj.items()), str(obj.items()))",
+            "        elif isinstance(obj, tuple) or isinstance(obj, list) or isinstance(obj, set) or isinstance(obj, frozenset):",
             "            for key, value in enumerate(obj):",
-            "                text += rpycg_dump_obj(value, '(%s)%s.%s' % (type(obj).__name__, obj_name, key), level + 1)",
+            "                text += rpycg_dump_obj(value, '(%s)%s.%s' % (obj_type, obj_name, key), level + 1)",
             "                executions += 1",
             "                if executions > max_executions:",
-            "                    return 'TOO MANY s %s.%s - %s - %s: %s' % (obj_name, key, level, len(obj), '')",
-            "        elif isinstance(obj, tuple):",
-            "            for key, value in enumerate(obj):",
-            "                text += rpycg_dump_obj(value, '(%s)%s.%s' % (type(obj).__name__, obj_name, key), level + 1)",
-            "        elif isinstance(obj, list):",
-            "            for key in range(len(obj)):",
-            "                value = obj[key]",
-            "                text += rpycg_dump_obj(value, '(%s)%s.%s' % (type(obj).__name__, obj_name, key), level + 1)",
-            "                executions += 1",
-            "                if executions > max_executions:",
-            "                    return 'TOO MANY l %s.%s - %s - %s: %s' % (obj_name, key, level, len(obj), '')",
+            "                    return '\\n ERROR TOO MANY s %s.%s - %s - %s: %s' % (obj_name, key, level, len(obj), '')",
             "        elif hasattr(obj, '__dict__'):",
             "            for key, value in obj.__dict__.items():",
             "                if obj is not value and not key.startswith('__') and not type(value).__name__.startswith('store.'):",
             "                    text += rpycg_dump_obj(value, '%s.%s' % (obj_name, key), level + 1)",
             "                executions += 1",
             "                if executions > max_executions:",
-            "                    return 'TOO MANY o %s.%s - %s - %s: %s' % (obj_name, key, level, len(obj.__dict__.items()), str(obj.__dict__.items()))",
+            "                    return '\\n ERROR TOO MANY o %s.%s - %s - %s: %s' % (obj_name, key, level, len(obj.__dict__.items()), str(obj.__dict__.items()))",
             "        elif hasattr(obj, 'items'):",
             "            for key, value in obj.items():",
             "                if obj is not value and not key.startswith('__') and not type(value).__name__.startswith('store.'):",
             "                    text += rpycg_dump_obj(value, '%s.%s' % (obj_name, key), level + 1)",
             "                executions += 1",
             "                if executions > max_executions:",
-            "                    return 'TOO MANY o %s.%s - %s - %s: %s' % (obj_name, key, level, len(obj.items()), str(obj.items()))",
+            "                    return '\\n ERROR TOO MANY o %s.%s - %s - %s: %s' % (obj_name, key, level, len(obj.items()), str(obj.items()))",
             "        else:",
-            "            return '\\n UNKNOWN %s  (%s) %s\\n' % (str(obj_name), type(obj).__name__, obj_name)",
+            "            return '\\n ERROR UNKNOWN %s  (%s) %s\\n' % (obj_name, obj_type, obj_name)",
             "    except Exception as error:",
-            "        return '\\n ERROR %s  (%s) %s\\n' % (str(error), type(obj).__name__, obj_name)",
+            "        return '\\n ERROR EXCEPTION %s  (%s) %s\\n' % (str(error), obj_type, obj_name)",
             "    return ('\\n  ' * level) + text",
             "# Enable write variables to file",
             "config.keymap[\"write_variables_bind\"] = [\"${settings.keyWrite.toBinding()}\"]",
