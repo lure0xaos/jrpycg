@@ -2,6 +2,7 @@ package com.github.lure0xaos.jrpycg.ui.comp.storage
 
 import com.github.lure0xaos.jrpycg.model.ModelItem
 import com.github.lure0xaos.jrpycg.res.Res
+import com.github.lure0xaos.jrpycg.res.icons.ResIcon
 import com.github.lure0xaos.jrpycg.services.LocaleHolder
 import com.github.lure0xaos.jrpycg.services.Storage
 import com.github.lure0xaos.util.USER_HOME
@@ -15,6 +16,7 @@ import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.io.path.Path
 import kotlin.io.path.extension
+import kotlin.io.path.isRegularFile
 
 
 class StoragePanel(localeHolder: LocaleHolder, private val preferences: Preferences) {
@@ -30,6 +32,7 @@ class StoragePanel(localeHolder: LocaleHolder, private val preferences: Preferen
         currentDirectory = storageDirectory.toFile()
         fileSelectionMode = JFileChooser.FILES_ONLY
         fileFilter = FileNameExtensionFilter(resources[LC_FILTER_DESCRIPTION], EXT)
+        fileView = RPyCGFileView { if (it.isRegularFile() && it.fileName.extension == EXT) ResIcon.FILE.icon else null }
     }
 
     fun isInitialized(): Boolean = storage.isInitialized()
@@ -42,14 +45,16 @@ class StoragePanel(localeHolder: LocaleHolder, private val preferences: Preferen
 
     fun selectLoadFile(parent: Component): Path? =
         if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION)
-            ensureExtension(chooser.selectedFile.toPath()).also { storageDirectory = it.parent } else null
+            chooser.selectedFile.toPath().let { ensureExtension(it) }.also { storageDirectory = it.parent }
+        else null
 
     fun selectSaveFile(parent: Component): Path? =
         if (chooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION)
-            ensureExtension(chooser.selectedFile.toPath()).also { storageDirectory = it.parent } else null
+            chooser.selectedFile.toPath().let { ensureExtension(it) }.also { storageDirectory = it.parent }
+        else null
 
     private fun ensureExtension(path: Path): Path =
-        if (path.fileName.extension.isNotEmpty()) path else path.resolveSibling("${path.fileName}.$EXT")
+        if (path.fileName.extension == EXT) path else path.resolveSibling("${path.fileName}.$EXT")
 
     companion object {
         private const val LC_FILTER_DESCRIPTION = "filter.description"

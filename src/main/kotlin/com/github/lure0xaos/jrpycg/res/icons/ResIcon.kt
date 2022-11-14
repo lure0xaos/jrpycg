@@ -7,7 +7,8 @@ import javax.swing.Icon
 enum class ResIcon(value: String) {
     COMPUTER("computer"),
     DELETE("clear"),
-    EMPTY("empty"), FILE("text-x-generic"),
+    EMPTY("empty"),
+    FILE("text-x-generic"),
     FOLDER("folder"),
     FOLDER_OPEN("folder-open"),
     GAME_FOLDER("game-folder"),

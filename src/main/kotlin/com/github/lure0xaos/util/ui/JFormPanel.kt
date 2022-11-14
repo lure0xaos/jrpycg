@@ -16,8 +16,10 @@ open class JFormPanel(
 
     private var row: Int = 0
 
-    private fun newLabelControl(label: String, icon: Icon?, control: JComponent) {
-        add(JLabel(label, icon, SwingConstants.RIGHT), GridBagConstraints {
+    private fun newLabelControl(label: String, icon: Icon?, tooltip: String?, control: JComponent) {
+        add(JLabel(label, icon, SwingConstants.RIGHT).apply {
+            if (tooltip != null) toolTipText = tooltip
+        }, GridBagConstraints {
             gridx = 0
             gridy = row
             fill = GridBagConstraints.HORIZONTAL
@@ -41,11 +43,17 @@ open class JFormPanel(
         row++
     }
 
+    fun addLabelControl(label: String, control: JComponent, tooltip: String): Unit =
+        newLabelControl(label, null, tooltip, control)
+
+    fun addLabelControl(label: String, icon: Icon, control: JComponent, tooltip: String): Unit =
+        newLabelControl(label, icon, tooltip, control)
+
     fun addLabelControl(label: String, control: JComponent): Unit =
-        newLabelControl(label, null, control)
+        newLabelControl(label, null, null, control)
 
     fun addLabelControl(label: String, icon: Icon, control: JComponent): Unit =
-        newLabelControl(label, icon, control)
+        newLabelControl(label, icon, null, control)
 
     init {
         customizer()

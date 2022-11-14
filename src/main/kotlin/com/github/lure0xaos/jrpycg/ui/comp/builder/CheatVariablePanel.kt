@@ -58,27 +58,37 @@ class CheatVariablePanel(
         get() = cmbType.selectedItem as VarType
 
     init {
-        addLabelControl(resources[LC_NAME], ResIcon.REQUIRED.icon, txtName)
-        addLabelControl(resources[LC_LABEL], txtLabel)
-        addLabelControl(resources[LC_VALUE], txtValue)
+        addLabelControl(resources[LC_NAME], ResIcon.REQUIRED.icon, txtName, resources[LC_NAME_TOOLTIP])
+        addLabelControl(resources[LC_LABEL], txtLabel, resources[LC_LABEL_TOOLTIP])
+        addLabelControl(resources[LC_VALUE], txtValue, resources[LC_VALUE_TOOLTIP])
         addLabelControl(resources[LC_TYPE], ResIcon.REQUIRED.icon, cmbType.apply {
             swing {
                 selectedIndex = 0
             }
-        })
+        }, resources[LC_TYPE_TOOLTIP])
     }
 
-    fun validateItem(): List<Pair<List<String>, JComponent>> {
-        val errors: MutableList<Pair<List<String>, JComponent>> = mutableListOf()
-        if (nameValue.isBlank()) errors += listOf(resources["validation.name.blank"]) to txtName
-        if (cmbType.selectedItem == null) errors += listOf(resources["validation.type.empty"]) to cmbType
-        return errors
-    }
+    fun validateItem(): List<Pair<List<String>, JComponent>> = listOf<Pair<List<String>, JComponent>>() +
+            (if (nameValue.isBlank()) listOf(listOf(resources[ERROR_NAME_BLANK]) to txtName) else listOf()) +
+            (if (!nameValue.matches(Regex(REGEX_NAME))) listOf(listOf(resources[ERROR_NAME_INVALID]) to txtName) else listOf()) +
+            (if (!labelValue.matches(Regex(REGEX_LABEL))) listOf(listOf(resources[ERROR_LABEL_INVALID]) to txtLabel) else listOf()) +
+            (if (cmbType.selectedItem == null) listOf(listOf(resources[ERROR_TYPE_EMPTY]) to cmbType) else listOf())
 
     companion object {
         private const val LC_NAME = "name"
+        private const val LC_NAME_TOOLTIP = "name.tooltip"
+        private const val REGEX_NAME = "[_a-zA-Z0-9]+"
         private const val LC_LABEL = "label"
+        private const val LC_LABEL_TOOLTIP = "label.tooltip"
+        private const val REGEX_LABEL = "[-a-zA-Z0-9 \\p{L}(),!?%+]+"
         private const val LC_VALUE = "value"
+        private const val LC_VALUE_TOOLTIP = "value.tooltip"
         private const val LC_TYPE = "type"
+        private const val LC_TYPE_TOOLTIP = "type.tooltip"
+
+        private const val ERROR_NAME_BLANK = "validation.name.blank"
+        private const val ERROR_NAME_INVALID = "validation.name.invalid"
+        private const val ERROR_LABEL_INVALID = "validation.label.invalid"
+        private const val ERROR_TYPE_EMPTY = "validation.type.empty"
     }
 }

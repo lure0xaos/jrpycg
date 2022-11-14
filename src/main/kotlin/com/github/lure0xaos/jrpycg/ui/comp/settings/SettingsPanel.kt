@@ -126,27 +126,27 @@ class SettingsPanel(
         add(JPanel(GridLayout(1, 2)) {
             add(JFormPanel {
                 setTitled(resources[LC_OPTIONS_TITLE])
-                addLabelControl(resources[LC_CHEAT], chkEnableCheat)
-                addLabelControl(resources[LC_CONSOLE], chkEnableConsole)
-                addLabelControl(resources[LC_DEVELOPER], chkEnableDeveloper)
-                addLabelControl(resources[LC_ROLLBACK], chkEnableRollback)
-                addLabelControl(resources[LC_WRITE], chkEnableWrite)
+                addLabelControl(resources[LC_CHEAT], chkEnableCheat, resources[LC_CHEAT_TOOLTIP])
+                addLabelControl(resources[LC_CONSOLE], chkEnableConsole, resources[LC_CONSOLE_TOOLTIP])
+                addLabelControl(resources[LC_DEVELOPER], chkEnableDeveloper, resources[LC_DEVELOPER_TOOLTIP])
+                addLabelControl(resources[LC_ROLLBACK], chkEnableRollback, resources[LC_ROLLBACK_TOOLTIP])
+                addLabelControl(resources[LC_WRITE], chkEnableWrite, resources[LC_WRITE_TOOLTIP])
             })
             add(JFormPanel {
                 setTitled(resources[LC_OPTIONS_KEYS])
-                addLabelControl(resources[LC_KEY_CHEAT], keyCheat)
-                addLabelControl(resources[LC_KEY_CONSOLE], keyConsole)
-                addLabelControl(resources[LC_KEY_DEVELOPER], keyDeveloper)
-                addLabelControl(resources[LC_KEY_WRITE], keyWrite)
+                addLabelControl(resources[LC_KEY_CHEAT], keyCheat, resources[LC_KEY_CHEAT_TOOLTIP])
+                addLabelControl(resources[LC_KEY_CONSOLE], keyConsole, resources[LC_KEY_CONSOLE_TOOLTIP])
+                addLabelControl(resources[LC_KEY_DEVELOPER], keyDeveloper, resources[LC_KEY_DEVELOPER_TOOLTIP])
+                addLabelControl(resources[LC_KEY_WRITE], keyWrite, resources[LC_KEY_WRITE_TOOLTIP])
                 addLabelControl("", JButton(resources[LC_OPTIONS_RESET], ResIcon.RESET.icon) {
                     reset()
-                })
+                }, resources[LC_OPTIONS_RESET_TOOLTIP])
             })
         }, BorderLayout.CENTER)
         add(JFormPanel {
             setTitled(resources[LC_LANGUAGE_TITLE])
-            addLabelControl(resources[LC_LANGUAGE_UI], cmbLocaleUi)
-            addLabelControl(resources[LC_LANGUAGE_MENU], cmbLocaleMenu)
+            addLabelControl(resources[LC_LANGUAGE_UI], cmbLocaleUi, resources[LC_LANGUAGE_UI_TOOLTIP])
+            addLabelControl(resources[LC_LANGUAGE_MENU], cmbLocaleMenu, resources[LC_LANGUAGE_MENU_TOOLTIP])
         }, BorderLayout.SOUTH)
         update(Settings.fromDefaults(preferences))
     }
@@ -190,17 +190,29 @@ class SettingsPanel(
         private const val LC_OPTIONS_KEYS = "options.keys"
         private const val LC_LANGUAGE_TITLE = "language.title"
         private const val LC_CHEAT = "cheat"
+        private const val LC_CHEAT_TOOLTIP = "cheat.tooltip"
         private const val LC_CONSOLE = "console"
+        private const val LC_CONSOLE_TOOLTIP = "console.tooltip"
         private const val LC_DEVELOPER = "developer"
+        private const val LC_DEVELOPER_TOOLTIP = "developer.tooltip"
         private const val LC_ROLLBACK = "rollback"
+        private const val LC_ROLLBACK_TOOLTIP = "rollback.tooltip"
         private const val LC_WRITE = "write"
+        private const val LC_WRITE_TOOLTIP = "write.tooltip"
         private const val LC_KEY_CHEAT = "key_cheat"
+        private const val LC_KEY_CHEAT_TOOLTIP = "key_cheat.tooltip"
         private const val LC_KEY_CONSOLE = "key_console"
+        private const val LC_KEY_CONSOLE_TOOLTIP = "key_console.tooltip"
         private const val LC_KEY_DEVELOPER = "key_developer"
+        private const val LC_KEY_DEVELOPER_TOOLTIP = "key_developer.tooltip"
         private const val LC_KEY_WRITE = "key_write"
+        private const val LC_KEY_WRITE_TOOLTIP = "key_write.tooltip"
         private const val LC_OPTIONS_RESET = "options.reset"
+        private const val LC_OPTIONS_RESET_TOOLTIP = "options.reset.tooltip"
         private const val LC_LANGUAGE_UI = "language.ui"
+        private const val LC_LANGUAGE_UI_TOOLTIP = "language.ui.tooltip"
         private const val LC_LANGUAGE_MENU = "language.menu"
+        private const val LC_LANGUAGE_MENU_TOOLTIP = "language.menu.tooltip"
 
         private const val LC_NEED_RESTART = "need-restart"
         private const val LC_NEED_RESTART_CANCEL = "need-restart-cancel"

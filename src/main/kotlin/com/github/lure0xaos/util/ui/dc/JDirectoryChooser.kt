@@ -1,5 +1,7 @@
 package com.github.lure0xaos.util.ui.dc
 
+import com.github.lure0xaos.util.get
+import com.github.lure0xaos.util.getResourceBundle
 import com.github.lure0xaos.util.ui.dialog.ButtonType
 import com.github.lure0xaos.util.ui.dialog.Closing
 import com.github.lure0xaos.util.ui.dialog.DialogType
@@ -9,6 +11,7 @@ import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dialog
 import java.nio.file.Path
+import java.util.ResourceBundle
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -28,6 +31,7 @@ class JDirectoryChooser(
     ) -> Unit = { _, _, _, _, _, _, _ -> }
 
 ) : JPanel(BorderLayout()) {
+    private val resources: ResourceBundle = JDirectoryChooser::class.getResourceBundle(JDirectoryChooser::class)
     private val treeModel: DefaultTreeModel = DefaultTreeModel(DirectoryTreeNode())
     private val tree: JTree = JTree(treeModel).apply {
         selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
@@ -92,7 +96,7 @@ class JDirectoryChooser(
                     emptyList()
                 else
                     listOf<Pair<List<String>, JComponent>>(
-                        listOf(/*resources[""]*/"") to this
+                        listOf(resources[ERROR_SELECTION_EMPTY]) to this
                     )
             },
             Closing.DISPOSE
@@ -143,6 +147,10 @@ class JDirectoryChooser(
         findNode(treeModel, path)?.let { TreePath(treeModel.getPathToRoot(it)) }?.also {
             if (tree.isCollapsed(it)) tree.expandPath(it)
         }
+    }
+
+    companion object {
+        private const val ERROR_SELECTION_EMPTY = "validation.selection.empty"
     }
 
 }
