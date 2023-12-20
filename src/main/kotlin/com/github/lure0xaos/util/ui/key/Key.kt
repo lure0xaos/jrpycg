@@ -204,9 +204,9 @@ enum class Key(val code: Int, val constant: String) {
 
     companion object {
         fun findByCode(code: Int): Key =
-            values().firstOrNull { it.code == code } ?: VK_UNKNOWN
+            entries.firstOrNull { it.code == code } ?: VK_UNKNOWN
 
         fun findByName(name: String): Key =
-            values().firstOrNull { if (name.length == 1) it.code == name[0].code else it.name == name } ?: VK_UNKNOWN
+            entries.firstOrNull { if (name.length == 1) it.code == name[0].code else it.name == name } ?: VK_UNKNOWN
     }
 }

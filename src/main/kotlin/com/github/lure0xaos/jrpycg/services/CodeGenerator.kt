@@ -3,15 +3,9 @@ package com.github.lure0xaos.jrpycg.services
 import com.github.lure0xaos.jrpycg.model.ModelItem
 import com.github.lure0xaos.jrpycg.model.Settings
 import com.github.lure0xaos.jrpycg.res.Res
+import com.github.lure0xaos.util.*
 import com.github.lure0xaos.util.StringListBuilder.Companion.buildStringList
-import com.github.lure0xaos.util.findResourceBundleLocales
-import com.github.lure0xaos.util.format
-import com.github.lure0xaos.util.get
-import com.github.lure0xaos.util.getResourceBundle
-import com.github.lure0xaos.util.indent
-import com.github.lure0xaos.util.resolveName
-import java.util.Locale
-import java.util.ResourceBundle
+import java.util.*
 
 @Suppress("DuplicatedCode")
 class CodeGenerator(private val settings: Settings) {
@@ -31,7 +25,7 @@ class CodeGenerator(private val settings: Settings) {
             if (settings.enableCheat) +enableCheat(settings.keyCheat.toBinding())
             if (settings.enableWrite) +enableWrite(settings.keyWrite.toBinding())
             if (settings.enableCheat) +createCheatMenu(menu)
-        }.also { require(menu.isRoot()) }
+        }.also { require(menu.isRoot) }
 
     private fun enableConsole(keyConsole: String): List<String> =
         buildStringList {
@@ -176,11 +170,11 @@ class CodeGenerator(private val settings: Settings) {
 
     private fun createCheatSubmenu(root: ModelItem, parentLabel: String): List<String> =
         buildStringList {
-            for (item in root.children) {
+            for (item: ModelItem in root.children) {
                 val itemName = item.name
                 val itemLabel = item.label
                 when {
-                    item.isVariable() -> {
+                    item.isVariable -> {
                         val itemType = item.type
                         val itemValue = item.value
                         val itemTypeKeyword = itemType.keyword
@@ -199,7 +193,7 @@ class CodeGenerator(private val settings: Settings) {
                         +"    jump $parentLabel"
                     }
 
-                    item.isMenu() -> {
+                    item.isMenu -> {
                         val pythonLabel = "rpycg_$itemName"
                         +"# menu $itemLabel"
                         +"'~$itemLabel~':"

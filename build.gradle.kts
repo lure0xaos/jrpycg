@@ -1,12 +1,12 @@
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.*
 
 plugins {
-    kotlin("jvm") version ("1.6.21")
+    kotlin("jvm") version "1.9.22"
     application
 
-    id("org.javamodularity.moduleplugin") version ("1.8.12")
-    id("org.beryx.jlink") version ("2.25.0")
+    id("org.javamodularity.moduleplugin") version "1.8.12"
+    id("org.beryx.jlink") version "3.0.1"
 }
 
 group = "com.github.lure0xaos.jrpycg"
@@ -33,10 +33,10 @@ repositories {
 }
 
 dependencies {
-    constraints {
-        implementation(kotlin("stdlib-jdk7"))
-        implementation(kotlin("stdlib-jdk8"))
-    }
+//    constraints {
+//        implementation(kotlin("stdlib-jdk7"))
+//        implementation(kotlin("stdlib-jdk8"))
+//    }
     implementation((kotlin("bom", kotlinVersion)))
     implementation(kotlin("reflect"))
 
@@ -50,7 +50,7 @@ tasks.compileJava {
 }
 
 tasks.compileKotlin {
-    targetCompatibility = javaVersion
+//    targetCompatibility = javaVersion
     kotlinOptions.jvmTarget = javaVersion
 }
 
@@ -141,6 +141,6 @@ tasks.compileTestJava {
     }
 }
 tasks.compileTestKotlin {
-    targetCompatibility = javaVersion
+//    targetCompatibility = javaVersion
     kotlinOptions.jvmTarget = javaVersion
 }

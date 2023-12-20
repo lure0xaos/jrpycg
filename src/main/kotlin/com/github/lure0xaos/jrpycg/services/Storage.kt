@@ -10,8 +10,8 @@ import kotlin.io.path.writeLines
 class Storage {
     private lateinit var path: Path
 
-    fun isInitialized(): Boolean =
-        ::path.isInitialized
+    val isInitialized: Boolean
+        get() = ::path.isInitialized
 
     fun saveAs(newPath: Path, root: ModelItem): Result<Unit> =
         doSave(newPath, root).onSuccess {
@@ -32,8 +32,8 @@ class Storage {
     companion object {
         private fun doSave(path: Path, root: ModelItem): Result<Unit> =
             runCatching {
-                require(root.isRoot())
-                require(!path.exists() || path.isRegularFile())
+                require(root.isRoot)
+                require(!path.exists())
                 path.writeLines(ScriptConverter.toScript(root))
             }
 
@@ -42,7 +42,7 @@ class Storage {
                 require(path.exists() && path.isRegularFile())
                 ScriptConverter.fromScript(path.readLines())
             }.also { result ->
-                result.getOrNull()?.let { require(it.isRoot()) }
+                result.getOrNull()?.let { require(it.isRoot) }
             }
     }
 }

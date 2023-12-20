@@ -30,7 +30,7 @@ internal class TreeTransferHandler : TransferHandler() {
         val tree = support.component as JTree
         val path = (support.dropLocation as JTree.DropLocation).path
         val dropRow = tree.getRowForPath(path)
-        if (UiModelItem.fromTreeNode(path.lastPathComponent).isVariable()) return false
+        if (UiModelItem.fromTreeNode(path.lastPathComponent).isVariable) return false
         for (selRow in tree.selectionRows!!) {
             if (selRow == dropRow) return false
             for (offspring in

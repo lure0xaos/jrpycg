@@ -12,14 +12,14 @@ object ModelConverter {
     private fun toModel(model: DefaultTreeModel, node: TreeNode, root: ModelItem): ModelItem =
         UiModelItem.fromTreeNode(node).let { item ->
             when {
-                item.isVariable() -> root.createVariable(item.name, item.label, item.value, item.type)
-                item.isMenu() -> root.createMenu(item.name, item.label) {
+                item.isVariable -> root.createVariable(item.name, item.label, item.value, item.type)
+                item.isMenu -> root.createMenu(item.name, item.label) {
                     (0 until model.getChildCount(node)).map { model.getChild(node, it) }.forEach {
                         toModel(model, it as TreeNode, this)
                     }
                 }
 
-                item.isRoot() -> ModelItem.createRoot {
+                item.isRoot -> ModelItem.createRoot {
                     (0 until model.getChildCount(node)).map { model.getChild(node, it) }.forEach {
                         toModel(model, it as TreeNode, this)
                     }
@@ -36,13 +36,13 @@ object ModelConverter {
 
     private fun toModel(model: DefaultTreeModel, item: ModelItem, uiItem: UiModelItem): TreeNode =
         when {
-            item.isVariable() -> {
+            item.isVariable -> {
                 val uiCheatItem =
                     uiItem.createVariable(model, item.name, item.label, item.value, item.type)
                 UiModelItem.findNode(model, uiCheatItem)!!
             }
 
-            item.isMenu() -> {
+            item.isMenu -> {
                 val uiCheatItem = uiItem.createMenu(model, item.name, item.label) {
                     item.children.forEach {
                         toModel(model, it, this)
@@ -51,7 +51,7 @@ object ModelConverter {
                 UiModelItem.findNode(model, uiCheatItem)!!
             }
 
-            item.isRoot() -> {
+            item.isRoot -> {
                 UiModelItem.findNode(model, UiModelItem.createRoot {
                     item.children.forEach {
                         toModel(model, it, this)

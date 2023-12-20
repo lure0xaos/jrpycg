@@ -14,9 +14,9 @@ class UiModelItem private constructor(
     var value: String,
     var type: VarType
 ) {
-    fun isMenu(): Boolean = menuType == ModelType.MENU
-    fun isVariable(): Boolean = menuType == ModelType.VAR
-    fun isRoot(): Boolean = this == createRoot()
+    val isMenu: Boolean = menuType == ModelType.MENU
+    val isVariable: Boolean = menuType == ModelType.VAR
+    val isRoot: Boolean = menuType == ModelType.ROOT
 
     fun createMenu(
         model: DefaultTreeModel,
@@ -24,7 +24,7 @@ class UiModelItem private constructor(
         label: String,
         initializer: UiModelItem.() -> Unit = { }
     ): UiModelItem {
-        require(isMenu() || isRoot())
+        require(isMenu || isRoot)
         return UiModelItem(ModelType.MENU, name, label, "", VarType.STR).also {
             addNode(model, it, findNode(model, this)!!)
         }.apply(initializer)
@@ -37,15 +37,14 @@ class UiModelItem private constructor(
         value: String,
         type: VarType
     ): UiModelItem {
-        require(isMenu() || isRoot())
+        require(isMenu || isRoot)
         return UiModelItem(ModelType.VAR, name, label, value, type).also {
             addNode(model, it, findNode(model, this)!!)
         }
     }
 
-    fun getParent(model: DefaultTreeModel): UiModelItem {
-        return fromTreeNode((findNode(model, this) as MutableTreeNode).parent)
-    }
+    fun getParent(model: DefaultTreeModel): UiModelItem =
+        fromTreeNode((findNode(model, this) as MutableTreeNode).parent)
 
     fun removeFromParent(model: DefaultTreeModel) {
         model.removeNodeFromParent(findNode(model, this) as MutableTreeNode)

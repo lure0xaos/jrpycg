@@ -9,7 +9,7 @@ enum class VarType(val keyword: String, val text: String, val icon: Icon? = null
 
     companion object {
         fun find(keyword: String): VarType =
-            values().first { it.keyword == keyword }
+            entries.first { it.keyword == keyword }
     }
 
 

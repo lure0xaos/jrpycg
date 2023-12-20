@@ -4,8 +4,8 @@ import com.github.lure0xaos.jrpycg.model.ModelItem
 import com.github.lure0xaos.jrpycg.model.VarType
 
 object TemplateGenerator {
-    fun createTemplate(): ModelItem {
-        return ModelItem.createRoot {
+    fun createTemplate(): ModelItem =
+        ModelItem.createRoot {
             createVariable("item1", "item1", "", VarType.STR)
             createMenu("menu1", "menu1") {
                 createVariable("item11", "item11", "", VarType.STR)
@@ -17,5 +17,4 @@ object TemplateGenerator {
             }
             createVariable("item2", "item2", "", VarType.STR)
         }
-    }
 }

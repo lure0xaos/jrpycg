@@ -23,18 +23,9 @@ import java.awt.Dialog
 import java.awt.Dimension
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import java.util.ResourceBundle
-import javax.swing.DropMode
-import javax.swing.JComponent
-import javax.swing.JPanel
-import javax.swing.JPopupMenu
-import javax.swing.JScrollPane
-import javax.swing.JTree
-import javax.swing.tree.DefaultMutableTreeNode
-import javax.swing.tree.DefaultTreeModel
-import javax.swing.tree.TreeNode
-import javax.swing.tree.TreePath
-import javax.swing.tree.TreeSelectionModel
+import java.util.*
+import javax.swing.*
+import javax.swing.tree.*
 
 
 class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout()) {
@@ -51,9 +42,9 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
             text = item.let { it.label.ifEmpty { it.name } }
             icon = item.let {
                 when {
-                    it.isRoot() -> ResIcon.COMPUTER.icon
-                    it.isMenu() -> ResIcon.MENU.icon
-                    it.isVariable() -> ResIcon.VARIABLE.icon
+                    it.isRoot -> ResIcon.COMPUTER.icon
+                    it.isMenu -> ResIcon.MENU.icon
+                    it.isVariable -> ResIcon.VARIABLE.icon
                     else -> null
                 }
             }
@@ -77,8 +68,8 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
         selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
     }
 
-    private fun colorItem(childCount: Int, siblingCount: Int): Color {
-        return when (childCount) {
+    private fun colorItem(childCount: Int, siblingCount: Int): Color =
+        when (childCount) {
             in (0..MAX_ITEM_WARN) -> when (siblingCount) {
                 in (0..MAX_ITEM_WARN) -> COLOR_ITEM_NORMAL
                 in (MAX_ITEM_WARN..MAX_ITEM_DANGER) -> COLOR_ITEM_WARN
@@ -88,7 +79,6 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
             in (MAX_ITEM_WARN..MAX_ITEM_DANGER) -> COLOR_ITEM_WARN
             else -> COLOR_ITEM_DANGER
         }
-    }
 
     fun getModel(): ModelItem = ModelConverter.toModel(treeModel)
 
@@ -106,7 +96,7 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
 
     private fun updatePopup(uiItem: UiModelItem) {
         popupMenu.removeAll()
-        if (uiItem.isVariable()) {
+        if (uiItem.isVariable) {
             popupMenu.add(JMenuItem(resources[LC_POPUP_VARIABLE_EDIT]) {
                 onEditItem(uiItem)
             })
@@ -114,7 +104,7 @@ class BuilderPanel(private val localeHolder: LocaleHolder) : JPanel(BorderLayout
                 onDeleteItem(uiItem)
             })
         }
-        if (uiItem.isMenu()) {
+        if (uiItem.isMenu) {
             popupMenu.add(JMenuItem(resources[LC_POPUP_MENU_EDIT]) {
                 onEditMenu(uiItem)
             })

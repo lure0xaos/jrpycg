@@ -4,16 +4,12 @@ import com.github.lure0xaos.util.format
 import com.github.lure0xaos.util.get
 import com.github.lure0xaos.util.getResourceBundle
 import com.github.lure0xaos.util.log.Log
-import com.github.lure0xaos.util.ui.dialog.ButtonFactory
-import com.github.lure0xaos.util.ui.dialog.ButtonType
-import com.github.lure0xaos.util.ui.dialog.DialogType
-import com.github.lure0xaos.util.ui.dialog.UIDialog
-import com.github.lure0xaos.util.ui.dialog.alertError
+import com.github.lure0xaos.util.ui.dialog.*
 import com.github.lure0xaos.util.ui.urlEncode
 import java.awt.Component
 import java.awt.Desktop
 import java.net.URI
-import java.util.ResourceBundle
+import java.util.*
 import javax.swing.JPanel
 
 class Email(localeHolder: LocaleHolder) {
@@ -45,8 +41,8 @@ class Email(localeHolder: LocaleHolder) {
         error: Throwable,
         panelCustomizer: JPanel.() -> Unit = {},
         dialogCustomizer: UIDialog<JPanel, ButtonType>.() -> Unit = {}
-    ): Boolean {
-        return ButtonType.NO == parent.alertError(
+    ): Boolean =
+        ButtonType.NO == parent.alertError(
             error = error,
             message = text,
             dialogType = DialogType.YES_NO,
@@ -62,7 +58,6 @@ class Email(localeHolder: LocaleHolder) {
             panelCustomizer = panelCustomizer,
             dialogCustomizer = dialogCustomizer
         )
-    }
 
     fun askAndEmail(
         parent: Component,

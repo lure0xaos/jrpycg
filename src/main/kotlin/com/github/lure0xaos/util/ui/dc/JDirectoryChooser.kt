@@ -11,12 +11,8 @@ import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dialog
 import java.nio.file.Path
-import java.util.ResourceBundle
-import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTree
+import java.util.*
+import javax.swing.*
 import javax.swing.event.TreeExpansionEvent
 import javax.swing.event.TreeWillExpandListener
 import javax.swing.tree.DefaultTreeModel
@@ -61,8 +57,8 @@ class JDirectoryChooser(
         }
 
     private fun updateTree(path: TreePath) {
-        nodeFromTreePath(path).also { node -> if (!node.isRoot()) updateReload(node) }.also { node: DirectoryTreeNode ->
-            if (node.isRoot()) {
+        nodeFromTreePath(path).also { node -> if (!node.isRoot) updateReload(node) }.also { node: DirectoryTreeNode ->
+            if (node.isRoot) {
                 for (child in node.children()) {
                     expandPath((child as DirectoryTreeNode).directory)
                 }

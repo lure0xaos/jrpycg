@@ -8,9 +8,10 @@ import com.github.lure0xaos.jrpycg.services.Storage
 import com.github.lure0xaos.util.USER_HOME
 import com.github.lure0xaos.util.get
 import com.github.lure0xaos.util.getResourceBundle
+import com.github.lure0xaos.util.pref.set
 import java.awt.Component
 import java.nio.file.Path
-import java.util.ResourceBundle
+import java.util.*
 import java.util.prefs.Preferences
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
@@ -26,7 +27,9 @@ class StoragePanel(localeHolder: LocaleHolder, private val preferences: Preferen
 
     private var storageDirectory: Path
         get() = Path(preferences[PREF_STORAGE, USER_HOME.toString()])
-        set(storageDirectory) = preferences.put(PREF_STORAGE, storageDirectory.toFile().absolutePath)
+        set(storageDirectory) {
+            preferences[PREF_STORAGE] = storageDirectory.toFile().absolutePath
+        }
 
     private val chooser: JFileChooser = JFileChooser().apply {
         currentDirectory = storageDirectory.toFile()
@@ -35,7 +38,8 @@ class StoragePanel(localeHolder: LocaleHolder, private val preferences: Preferen
         fileView = RPyCGFileView { if (it.isRegularFile() && it.fileName.extension == EXT) ResIcon.FILE.icon else null }
     }
 
-    fun isInitialized(): Boolean = storage.isInitialized()
+    val isInitialized: Boolean
+        get() = storage.isInitialized
 
     fun loadAs(path: Path): Result<ModelItem> = storage.loadAs(path)
     fun reload(): Result<ModelItem> = storage.reload()

@@ -9,19 +9,19 @@ class ModelItem private constructor(
     val parent: ModelItem? = null,
     val children: MutableList<ModelItem> = mutableListOf()
 ) {
-    fun isMenu(): Boolean = menuType == ModelType.MENU
-    fun isVariable(): Boolean = menuType == ModelType.VAR
-    fun isRoot(): Boolean = menuType == ModelType.ROOT
+    val isMenu: Boolean = menuType == ModelType.MENU
+    val isVariable: Boolean = menuType == ModelType.VAR
+    val isRoot: Boolean = menuType == ModelType.ROOT
 
     fun createMenu(name: String, label: String, initializer: ModelItem.() -> Unit = { }): ModelItem {
-        require(isMenu() || isRoot())
+        require(isMenu || isRoot)
         return ModelItem(ModelType.MENU, name, label, "", VarType.STR, this).also {
             children += it
         }.apply(initializer)
     }
 
     fun createVariable(name: String, label: String, value: String, type: VarType): ModelItem {
-        require(isMenu() || isRoot())
+        require(isMenu || isRoot)
         return ModelItem(ModelType.VAR, name, label, value, type, this).also {
             children += it
         }

@@ -9,7 +9,7 @@ import com.github.lure0xaos.util.getResourceBundle
 import com.github.lure0xaos.util.ui.JFormPanel
 import com.github.lure0xaos.util.ui.swing
 import java.awt.Component
-import java.util.ResourceBundle
+import java.util.*
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JList
@@ -28,7 +28,7 @@ class CheatVariablePanel(
     private val txtName = JTextField(nameValue)
     private val txtLabel = JTextField(labelValue)
     private val txtValue = JTextField(valueValue)
-    private val cmbType: JComboBox<VarType> = JComboBox(VarType.values()).apply {
+    private val cmbType: JComboBox<VarType> = JComboBox(VarType.entries.toTypedArray()).apply {
         renderer = object : BasicComboBoxRenderer() {
             override fun getListCellRendererComponent(
                 list: JList<*>,

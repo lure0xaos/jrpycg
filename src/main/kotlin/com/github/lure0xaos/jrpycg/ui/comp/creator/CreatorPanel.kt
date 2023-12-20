@@ -12,21 +12,9 @@ import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
-import java.util.ResourceBundle
-import java.util.TreeMap
-import javax.swing.BorderFactory
-import javax.swing.JComponent
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTextPane
-import javax.swing.ScrollPaneConstants
-import javax.swing.text.Element
-import javax.swing.text.PlainDocument
-import javax.swing.text.PlainView
-import javax.swing.text.StyledEditorKit
-import javax.swing.text.Utilities
-import javax.swing.text.View
-import javax.swing.text.ViewFactory
+import java.util.*
+import javax.swing.*
+import javax.swing.text.*
 
 class CreatorPanel(localeHolder: LocaleHolder) : JPanel(BorderLayout()) {
     private val resources: ResourceBundle = Res::class.getResourceBundle(CreatorPanel::class, localeHolder.locale)
@@ -121,11 +109,10 @@ class CreatorPanel(localeHolder: LocaleHolder) : JPanel(BorderLayout()) {
         })
     }
 
-    fun checkErrors(): Result<ModelItem> {
-        return runCatching { (ScriptConverter.fromScript(script)) }
+    fun checkErrors(): Result<ModelItem> =
+        runCatching { (ScriptConverter.fromScript(script)) }
             .onFailure { decorateError(listOf(it.localizedMessage)) }
             .onSuccess { decorateError(listOf()) }
-    }
 
     private fun scrollDown() {
         content.caretPosition = content.document.length

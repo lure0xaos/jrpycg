@@ -4,46 +4,28 @@ import com.github.lure0xaos.jrpycg.model.Settings
 import com.github.lure0xaos.jrpycg.model.VarType
 import com.github.lure0xaos.jrpycg.res.Res
 import com.github.lure0xaos.jrpycg.res.icons.ResIcon
-import com.github.lure0xaos.jrpycg.services.CodeGenerator
-import com.github.lure0xaos.jrpycg.services.Email
-import com.github.lure0xaos.jrpycg.services.LocaleHolder
-import com.github.lure0xaos.jrpycg.services.ScriptConverter
-import com.github.lure0xaos.jrpycg.services.TemplateGenerator
+import com.github.lure0xaos.jrpycg.services.*
 import com.github.lure0xaos.jrpycg.ui.comp.about.AboutPanel
 import com.github.lure0xaos.jrpycg.ui.comp.builder.BuilderPanel
 import com.github.lure0xaos.jrpycg.ui.comp.creator.CreatorPanel
 import com.github.lure0xaos.jrpycg.ui.comp.settings.SettingsPanel
 import com.github.lure0xaos.jrpycg.ui.comp.storage.StoragePanel
 import com.github.lure0xaos.jrpycg.ui.comp.system.SystemPanel
-import com.github.lure0xaos.util.Fit
-import com.github.lure0xaos.util.USER_HOME
-import com.github.lure0xaos.util.findResource
-import com.github.lure0xaos.util.get
-import com.github.lure0xaos.util.getResource
-import com.github.lure0xaos.util.getResourceBundle
-import com.github.lure0xaos.util.putClipboard
-import com.github.lure0xaos.util.resolveName
-import com.github.lure0xaos.util.toImage
-import com.github.lure0xaos.util.ui.JButton
-import com.github.lure0xaos.util.ui.JButtonPanel
-import com.github.lure0xaos.util.ui.JDropdownButton
-import com.github.lure0xaos.util.ui.JImagePanel
-import com.github.lure0xaos.util.ui.JMenuItem
-import com.github.lure0xaos.util.ui.JPanel
-import com.github.lure0xaos.util.ui.JSizingLabel
+import com.github.lure0xaos.util.*
+import com.github.lure0xaos.util.pref.set
+import com.github.lure0xaos.util.ui.*
 import com.github.lure0xaos.util.ui.dc.JDirectoryChooser
 import com.github.lure0xaos.util.ui.dialog.alert
 import com.github.lure0xaos.util.ui.dialog.confirm
 import com.github.lure0xaos.util.ui.main.JExtFrame
 import com.github.lure0xaos.util.ui.preloader.Preloader
-import com.github.lure0xaos.util.ui.swing
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridLayout
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.nio.file.Path
-import java.util.ResourceBundle
+import java.util.*
 import javax.swing.JMenuItem
 import javax.swing.JTabbedPane
 import javax.swing.SwingConstants
@@ -85,8 +67,8 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
 
     private fun updateButtons() {
         swing {
-            btnReload.isEnabled = storagePanel.isInitialized()
-            btnSave.isEnabled = storagePanel.isInitialized()
+            btnReload.isEnabled = storagePanel.isInitialized
+            btnSave.isEnabled = storagePanel.isInitialized
         }
     }
 
@@ -105,17 +87,17 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
     }
 
     private fun onTab() {
-        if (isActiveSettings()) {
+        if (isActiveSettings) {
             settingsPanel.onShow()
         } else {
             settingsPanel.onHide()
-            if (isActiveBuilder()) {
+            if (isActiveBuilder) {
                 runCatching {
                     if (creator.isChanged) builder.setUiRoot(ScriptConverter.fromScript(creator.script))
                     creator.isChanged = false
                 }
             }
-            if (isActiveCreator()) {
+            if (isActiveCreator) {
                 runCatching {
                     creator.script = ScriptConverter.toScript(builder.getModel())
                     creator.isChanged = false
@@ -125,17 +107,23 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
         }
     }
 
-    private fun isActiveAbout(): Boolean = tabs.selectedComponent === about
+    private val isActiveAbout: Boolean
+        get() = tabs.selectedComponent === about
 
-    private fun isActiveSettings(): Boolean = tabs.selectedComponent === settingsPanel
+    private val isActiveSettings: Boolean
+        get() = tabs.selectedComponent === settingsPanel
 
-    private fun isActiveCreator(): Boolean = tabs.selectedComponent === creator
+    private val isActiveCreator: Boolean
+        get() = tabs.selectedComponent === creator
 
-    private fun isActiveBuilder(): Boolean = tabs.selectedComponent === builder
+    private val isActiveBuilder: Boolean
+        get() = tabs.selectedComponent === builder
 
     private var gameDirectory: Path
         get() = Path(preferences[PREF_GAME, USER_HOME.toString()])
-        set(gameDirectory) = preferences.put(PREF_GAME, gameDirectory.toFile().absolutePath)
+        set(gameDirectory) {
+            preferences[PREF_GAME] = gameDirectory.toFile().absolutePath
+        }
 
     private val chooser = JDirectoryChooser(
         customizer = {
@@ -157,7 +145,7 @@ class RPyCGFrame(preloader: Preloader?, args: Array<String>) : JExtFrame(preload
     }
 
     private fun canGenerate(): Boolean =
-        (!isActiveCreator() || !creator.isChanged || runCatching {
+        (!isActiveCreator || !creator.isChanged || runCatching {
             if (creator.isChanged) builder.setUiRoot(ScriptConverter.fromScript(creator.script))
         }.onSuccess {
             creator.isChanged = false

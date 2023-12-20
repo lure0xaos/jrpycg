@@ -1,22 +1,20 @@
 package com.github.lure0xaos.util.ui.dc
 
 import java.nio.file.Path
-import java.util.Collections
-import java.util.Enumeration
+import java.util.*
 import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeNode
 import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 
-class DirectoryTreeNode private constructor(val directory: Path, private val parentNode: DirectoryTreeNode?) :
+class DirectoryTreeNode(val directory: Path = Path(""), private val parentNode: DirectoryTreeNode? = null) :
     MutableTreeNode, Comparable<DirectoryTreeNode> {
-
-    constructor() : this(Path(""), null)
 
     private val childrenNodes: MutableList<DirectoryTreeNode>
 
-    fun isRoot(): Boolean = directory.toString().isEmpty()
+    val isRoot: Boolean
+        get() = directory.toString().isEmpty()
 
     override fun getChildAt(childIndex: Int): TreeNode = childrenNodes[childIndex]
 
@@ -81,7 +79,7 @@ class DirectoryTreeNode private constructor(val directory: Path, private val par
 
     init {
         this.childrenNodes =
-            if (isRoot()) directory.fileSystem.rootDirectories.map { DirectoryTreeNode(it, this) }
+            if (isRoot) directory.fileSystem.rootDirectories.map { DirectoryTreeNode(it, this) }
                 .sorted().toMutableList()
             else mutableListOf()
     }
