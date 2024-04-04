@@ -2,7 +2,6 @@ package com.github.lure0xaos.util.ui.key
 
 import java.awt.event.KeyEvent
 
-@Suppress("unused")
 enum class Key(val code: Int, val constant: String) {
     VK_ENTER('\n'.code, "K_ENTER"),
     VK_BACK_SPACE('\b'.code, "K_BACK_SPACE"),

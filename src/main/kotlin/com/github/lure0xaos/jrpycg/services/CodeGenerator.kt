@@ -7,7 +7,6 @@ import com.github.lure0xaos.util.*
 import com.github.lure0xaos.util.StringListBuilder.Companion.buildStringList
 import java.util.*
 
-@Suppress("DuplicatedCode")
 class CodeGenerator(private val settings: Settings) {
     private val resources: ResourceBundle = Res::class.getResourceBundle(CodeGenerator::class, settings.localeMenu)
 
@@ -164,7 +163,7 @@ class CodeGenerator(private val settings: Settings) {
             +"    menu:"
             +createCheatSubmenu(root, "rpycg_cheat_menu").indent(2)
             +"        # nevermind"
-            +"        '~$messageNevermind~':"
+            +"        '~~$messageNevermind~~':"
             +"            return"
         }
 
@@ -201,7 +200,7 @@ class CodeGenerator(private val settings: Settings) {
                         +"        menu:"
                         +createCheatSubmenu(item, pythonLabel).indent(3)
                         +"            # back"
-                        +"            '~$messageBack~':"
+                        +"            '~~$messageBack~~':"
                         +"                jump $parentLabel"
                     }
                 }

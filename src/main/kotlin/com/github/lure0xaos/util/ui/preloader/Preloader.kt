@@ -27,7 +27,7 @@ open class Preloader(customizer: Container.() -> Unit) {
     fun hide() {
         if (!disposed) {
             disposed = true
-            notifyProgress(100)
+            notifyProgress()
             window.dispose()
         }
     }

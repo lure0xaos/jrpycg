@@ -10,6 +10,6 @@ enum class Level(val text: String) {
     val string: String by lazy { text.take(len).padStart(len) }
 
     companion object {
-        private val len: Int by lazy { values().map { it }.maxOf { it.text.length } }
+        private val len: Int by lazy { entries.map { it }.maxOf { it.text.length } }
     }
 }

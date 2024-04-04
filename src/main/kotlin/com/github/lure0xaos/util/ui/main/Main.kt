@@ -1,7 +1,6 @@
 package com.github.lure0xaos.util.ui.main
 
 import com.github.lure0xaos.util.USER_DIR
-import com.github.lure0xaos.util.privileged
 import com.github.lure0xaos.util.ui.preloader.Preloader
 import com.github.lure0xaos.util.ui.swing
 import java.net.URLClassLoader
@@ -27,9 +26,7 @@ object Main {
 
     @Suppress("UNCHECKED_CAST")
     private fun <A : Any?> loadClass(className: String): Class<A> =
-        privileged<Class<A>> {
-            URLClassLoader(arrayOf(USER_DIR.toUri().toURL()), ClassLoader.getSystemClassLoader())
-                .loadClass(className) as Class<A>
-        }
+        URLClassLoader(arrayOf(USER_DIR.toUri().toURL()), ClassLoader.getSystemClassLoader())
+            .loadClass(className) as Class<A>
 
 }

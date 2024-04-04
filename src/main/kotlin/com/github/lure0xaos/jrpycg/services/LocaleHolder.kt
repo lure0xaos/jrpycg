@@ -6,7 +6,7 @@ import java.util.prefs.Preferences
 
 class LocaleHolder(private val preferences: Preferences) {
     var locale: Locale
-        get() = preferences[PREF_LOCALE_UI, Locale.getDefault().language].let { Locale(it) }
+        get() = preferences[PREF_LOCALE_UI, Locale.getDefault().language].let { Locale.forLanguageTag(it) }
         set(value) {
             preferences[PREF_LOCALE_UI] = value.language
         }

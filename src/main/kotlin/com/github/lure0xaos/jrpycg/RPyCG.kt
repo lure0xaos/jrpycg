@@ -13,7 +13,7 @@ object RPyCG {
     fun main(args: Array<String>) {
         LoggerFactory
         FilePreferencesFactory()
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
         Main.run(ImagePreloader(), RPyCGFrame::class, args)
     }
 }

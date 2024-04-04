@@ -47,7 +47,7 @@ class AboutPanel(localeHolder: LocaleHolder) : JPanel(BorderLayout(10, 10)) {
                 ipady = 10
                 anchor = GridBagConstraints.PAGE_START
             })
-            add(JWrappedLabel(resources[LC_USAGE], SwingConstants.CENTER), GridBagConstraints {
+            add(JWrappedLabel(resources[LC_USAGE]), GridBagConstraints {
                 gridy = 1
                 fill = GridBagConstraints.HORIZONTAL
                 ipadx = 10

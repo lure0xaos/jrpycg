@@ -29,7 +29,7 @@ class Settings(
 
 
     init {
-        this.localeMenu = preferences[PREF_LOCALE_MENU, localeMenu.language].let { Locale(it) }
+        this.localeMenu = preferences[PREF_LOCALE_MENU, localeMenu.language].let { Locale.forLanguageTag(it) }
         this.enableCheat = preferences.getBoolean(PREF_CHEAT, enableCheat)
         this.enableConsole = preferences.getBoolean(PREF_CONSOLE, enableConsole)
         this.enableDeveloper = preferences.getBoolean(PREF_DEVELOPER, enableDeveloper)
@@ -50,7 +50,7 @@ class Settings(
         keyDeveloper: KeyCombination, keyWrite: KeyCombination,
         localeMenu: Locale
     ) {
-        this.localeMenu = preferences[PREF_LOCALE_MENU, localeMenu.language].let { Locale(it) }
+        this.localeMenu = preferences[PREF_LOCALE_MENU, localeMenu.language].let { Locale.forLanguageTag(it) }
         this.enableCheat = preferences.getBoolean(PREF_CHEAT, enableCheat)
         this.enableConsole = preferences.getBoolean(PREF_CONSOLE, enableConsole)
         this.enableDeveloper = preferences.getBoolean(PREF_DEVELOPER, enableDeveloper)
@@ -105,7 +105,7 @@ class Settings(
             bundle[PREF_KEY_CONSOLE].let { KeyCombination.parse(it) },
             bundle[PREF_KEY_DEVELOPER].let { KeyCombination.parse(it) },
             bundle[PREF_KEY_WRITE].let { KeyCombination.parse(it) },
-            bundle[PREF_LOCALE_MENU].let { Locale(it) }
+            bundle[PREF_LOCALE_MENU].let { Locale.forLanguageTag(it) }
         )
     }
 }

@@ -2,10 +2,7 @@ package com.github.lure0xaos.jrpycg.services
 
 import com.github.lure0xaos.jrpycg.model.ModelItem
 import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.readLines
-import kotlin.io.path.writeLines
+import kotlin.io.path.*
 
 class Storage {
     private lateinit var path: Path
@@ -33,7 +30,7 @@ class Storage {
         private fun doSave(path: Path, root: ModelItem): Result<Unit> =
             runCatching {
                 require(root.isRoot)
-                require(!path.exists())
+                if(path.exists()) path.deleteExisting()
                 path.writeLines(ScriptConverter.toScript(root))
             }
 

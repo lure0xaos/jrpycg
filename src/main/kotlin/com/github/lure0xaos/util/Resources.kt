@@ -1,4 +1,4 @@
-@file:Suppress("NOTHING_TO_INLINE", "unused", "DuplicatedCode")
+@file:Suppress("NOTHING_TO_INLINE", "unused")
 
 package com.github.lure0xaos.util
 
@@ -8,6 +8,7 @@ import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.awt.image.BufferedImage
 import java.io.InputStream
+import java.net.URI
 import java.net.URL
 import java.nio.file.Path
 import java.util.Locale
@@ -27,14 +28,14 @@ fun KClass<*>.resolveName(): String = '/' + qualifiedName!!.replace('.', '/')
 
 inline fun KClass<*>.findResource(name: String): URL? =
     java.getResource(resolveName(name).removePrefix(resolveName().substringBeforeLast('/') + '/')).also {
-        if (it == null) {
+        if (it === null) {
             Log.warn { "$name (${resolveName(name)}) not found" }
         }
     }
 
 inline fun KClass<*>.findResourceStream(name: String): InputStream? =
     java.getResourceAsStream(resolveName(name).removePrefix(resolveName().substringBeforeLast('/') + '/')).also {
-        if (it == null) {
+        if (it === null) {
             Log.warn { "$name (${resolveName(name)}) not found" }
         }
     }
@@ -81,7 +82,7 @@ inline fun KClass<*>.getLocalizedResource(name: String, locale: Locale = Locale.
 
 inline fun KClass<*>.findResourceLocales(name: String, defaultLocale: Locale = Locale.ROOT): Set<Locale> {
     val fullName = resolveName(name)
-    return (if (findResource(fullName) == null) emptySet() else setOf(defaultLocale)) + Locale.getAvailableLocales()
+    return (if (findResource(fullName) === null) emptySet() else setOf(defaultLocale)) + Locale.getAvailableLocales()
         .filter { locale ->
             when {
                 locale.language.isNotEmpty() && locale.country.isNotEmpty() -> arrayOf(
@@ -99,7 +100,7 @@ inline fun KClass<*>.findResourceLocales(name: String, defaultLocale: Locale = L
 inline fun KClass<*>.findResourceBundleLocales(name: String, localeForRoot: Locale = Locale.ROOT): Set<Locale> =
     findResourceLocales("$name$EXT_PROPERTIES", localeForRoot)
 
-fun String.toUrl(): URL? = runCatching { URL(this) }.getOrNull()
+fun String.toUrl(): URL? = runCatching { URI(this).toURL() }.getOrNull()
 
 fun URL.toImageIcon(): ImageIcon = ImageIcon(this)
 
@@ -107,20 +108,11 @@ fun URL.toIcon(): Icon = ImageIcon(this)
 fun URL.toImage(): Image = ImageIcon(this).image
 fun URL.toBufferedImage(): BufferedImage = ImageIO.read(this)
 
-val USER_HOME: Path = Path(privileged<String> { System.getProperty("user.home") })
-val USER_DIR: Path = Path(privileged<String> { System.getProperty("user.dir") })
-val USER_NAME: String = privileged<String> { System.getProperty("user.name") }
+val USER_HOME: Path = Path(System.getProperty("user.home"))
+val USER_DIR: Path = Path(System.getProperty("user.dir"))
+val USER_NAME: String = System.getProperty("user.name")
 fun String.format(args: Map<String, String>): String =
     replace(SHORT_PLACEHOLDER) { result: MatchResult -> result.groupValues[1].let { args[it] ?: it } }
-
-@Suppress("DEPRECATION")
-fun <R : Any> privileged(action: () -> R): R =
-    java.security.AccessController.doPrivileged(java.security.PrivilegedExceptionAction(action))
-
-@Suppress("DEPRECATION")
-fun privileged(action: () -> Unit): Unit =
-    java.security.AccessController.doPrivileged(java.security.PrivilegedExceptionAction(action))
-
 
 fun doubleApproximates(d1: Double, d2: Double, epsilon: Double = 0.000001): Boolean = abs(d1 - d2) < epsilon
 

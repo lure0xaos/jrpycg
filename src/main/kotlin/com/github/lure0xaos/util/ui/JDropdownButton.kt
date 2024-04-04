@@ -91,7 +91,7 @@ class JDropdownButton : JButton {
         })
         addMouseMotionListener(object : MouseMotionAdapter() {
             override fun mouseMoved(e: MouseEvent) {
-                inMenuLocation = e.point.x >= width - gap - gap - downArrowWidth
+                inMenuLocation = e.point.x >= width - GAP - GAP - downArrowWidth
             }
         })
     }
@@ -118,11 +118,11 @@ class JDropdownButton : JButton {
 
     override fun paint(g: Graphics) {
         super.paint(g)
-        g.drawImage(downArrow, width - downArrowWidth - gap, height / 2, null)
+        g.drawImage(downArrow, width - downArrowWidth - GAP, height / 2, null)
     }
 
     companion object {
-        private const val gap = 10
+        private const val GAP = 10
         private val downArrow: Image = ImageIcon(JDropdownButton::class.java.getResource("down-arrow.png")).image
         private val downArrowWidth: Int = downArrow.getWidth(null)
     }

@@ -1,21 +1,18 @@
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version libs.versions.kotlin
+    kotlin("plugin.serialization") version libs.versions.kotlin
     application
-
-    id("org.javamodularity.moduleplugin") version "1.8.12"
-    id("org.beryx.jlink") version "3.0.1"
+    id("org.javamodularity.moduleplugin") version libs.versions.org.javamodularity.moduleplugin
+    id("org.beryx.jlink") version libs.versions.org.beryx.jlink
 }
 
 group = "com.github.lure0xaos.jrpycg"
 version = "1.0.0"
 
 description = ""
-
-val javaVersion: String = project.extra["java.version"].toString()
-val kotlinVersion: String = project.extra["kotlin.version"].toString()
 
 val appMainClass: String = "com.github.lure0xaos.jrpycg.RPyCG"
 val appModule: String = "RPyCG"
@@ -33,25 +30,21 @@ repositories {
 }
 
 dependencies {
-//    constraints {
-//        implementation(kotlin("stdlib-jdk7"))
-//        implementation(kotlin("stdlib-jdk8"))
-//    }
-    implementation((kotlin("bom", kotlinVersion)))
+    implementation(kotlin("bom", libs.versions.kotlin.get()))
     implementation(kotlin("reflect"))
-
     testImplementation(kotlin("test"))
 }
 
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get()))
+
 tasks.compileJava {
     modularity.inferModulePath.set(true)
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
+    sourceCompatibility = libs.versions.java.get()
+    targetCompatibility = libs.versions.java.get()
 }
 
 tasks.compileKotlin {
-//    targetCompatibility = javaVersion
-    kotlinOptions.jvmTarget = javaVersion
+    kotlinOptions.jvmTarget = libs.versions.java.get()
 }
 
 application {
@@ -61,7 +54,7 @@ application {
 
 tasks.compileTestKotlin {
     kotlinOptions {
-        jvmTarget = javaVersion
+        jvmTarget = libs.versions.java.get()
     }
 }
 
@@ -74,7 +67,7 @@ tasks.processResources {
                         key == "project.name" -> appName
                         key == "project.version" -> project.version.toString()
                         key == "project.description" -> project.description
-                        key == "timestamp" -> SimpleDateFormat("yyyyMMdd-HHmm").format(Date())
+                        key == "timestamp" -> DateTimeFormatter.ofPattern("yyyyMMdd-HHmm").format(Instant.now())
                         project.extra.has(key) -> project.extra.get(key)?.toString()
                         else -> null
                     }
@@ -120,7 +113,6 @@ jlink {
             icon = rootProject.file(appIconPng).path
         }
         installerOptions = listOf("--verbose")
-//        imageOptions = listOf("--win-console")
     }
 }
 
@@ -141,6 +133,5 @@ tasks.compileTestJava {
     }
 }
 tasks.compileTestKotlin {
-//    targetCompatibility = javaVersion
-    kotlinOptions.jvmTarget = javaVersion
+    kotlinOptions.jvmTarget = libs.versions.java.get()
 }

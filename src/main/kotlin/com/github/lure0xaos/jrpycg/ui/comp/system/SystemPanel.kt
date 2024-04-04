@@ -5,11 +5,9 @@ import com.github.lure0xaos.jrpycg.services.LocaleHolder
 import com.github.lure0xaos.util.capitalizeWords
 import com.github.lure0xaos.util.get
 import com.github.lure0xaos.util.getResourceBundle
-import com.github.lure0xaos.util.privileged
 import com.github.lure0xaos.util.putClipboard
 import com.github.lure0xaos.util.ui.RowTableModel
 import java.awt.BorderLayout
-import java.util.Properties
 import java.util.ResourceBundle
 import javax.swing.JPanel
 import javax.swing.JScrollPane
@@ -28,12 +26,12 @@ class SystemPanel(localeHolder: LocaleHolder) : JPanel(BorderLayout(10, 10)) {
                 putClipboard(item.second)
             }
         ),
-        privileged<Properties> { System.getProperties() }
+        System.getProperties()
             .map {
                 it.key.toString().capitalizeWords(localeHolder.locale, ".") to
                         it.value.toString().replace(";", ";\n")
             }
-            .sortedWith { a, b -> a.first.compareTo(b.first) },
+            .sortedWith { (a), (b) -> a.compareTo(b) },
         localeHolder.locale
     )
 
